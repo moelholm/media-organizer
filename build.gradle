@@ -38,18 +38,14 @@ bootRun {
 }
 
 task triggerJob << {
-    print ""
-    print "----"
-    print "from env: " + System.getenv().hasProperty('web.apiKey')
-    print "from env: " + System.getenv('web.apiKey')
-    print "----"
 
-    if (System.properties['web.apiKey']) {
+    if (System.getenv('web.apiKey')) {
         print "Running media organizer"
         "https://media-organizer.herokuapp.com/api/mediaorganizer/trigger"
                 .toURL()
-                .getText(requestProperties: [Authorization: System.properties['web.apiKey']])
+                .getText(requestProperties: [Authorization: System.getenv('web.apiKey')])
     } else {
-        logger.error "Did not find apiKey in System properties!"
+        logger.error "Did not find apiKey in environment variables!"
     }
+
 }
