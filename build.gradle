@@ -1,0 +1,34 @@
+buildscript {
+    ext {
+        springBootVersion = '1.5.1.RELEASE'
+        commonsLangVersion = '2.4'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+
+group 'com.moelholm'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    compile "org.springframework.boot:spring-boot-starter-actuator"
+    compile "org.springframework.boot:spring-boot-starter-web"
+    compile "com.fasterxml.jackson.core:jackson-databind"
+    compile "commons-lang:commons-lang:${commonsLangVersion}"
+
+    testCompile "org.springframework.boot:spring-boot-starter-test"
+
+}

@@ -1,0 +1,41 @@
+#
+# Default configuration file.
+#
+#
+
+daemon:
+  #
+  # When the application is started as a daemon (with the --daemon flag), at what
+  # schedule should it then process the media files? (provide a valid CRON expression).
+  #
+  scheduleAsCronExpression: 0 45 23 ? * *
+
+mediafiles:
+  #
+  # What is the expected date pattern in the photo- and video filenames?
+  # ( EXIF data is not used as datetime source )
+  #
+  datepattern: yyyy-MM-dd HH.mm.ss
+  #
+  # What kind of media files would you like to be organized?
+  #
+  mediaFileExtensionsToMatch: jpg,mov
+
+destination:
+  #
+  # How many photos/videos should appear within a day before we consider them an actual event?
+  # (inclusive value)
+  #
+  amountOfMediaFilesIndicatingAnEvent: 10
+  #
+  # When generating the "month" name in destination folders, which locale do you want to use?
+  #
+  localeForGeneratingDestinationFolderNames: en_UK
+  #
+  # What should the suffix be of the monthly folder that contains occational photos/videos?
+  #
+  suffixForDestinationFolderOfMiscMediaFiles: Misc
+  #
+  # What should the suffix be of the folders containing events?
+  #
+  suffixForDestinationFolderOfUnknownEventMediaFiles: This Must Be An Event
