@@ -11,7 +11,7 @@ This will move all your media files from `target/input` into an organized layout
 Before you begin: Ensure that you have jdk 8 in the path.
 
 ## Run the application
-`mvn spring-boot:run -Drun.arguments="--fromDir=/path/to/source --toDir=/path/to/destination"`
+`./gradlew bootRun -Drun.arguments="--fromDir=/path/to/source --toDir=/path/to/destination"`
 
 You can also run the application with the `--daemon` flag. It will:
 - Start the application as a daemon (running until explicitly closed)
@@ -24,11 +24,11 @@ Do you want to try out the tool with Dropbox? Then:
 ( to use this feature you need to get your own token for your Dropbox account )
  
 ## Test
-`mvn test`
+`./gradlew test`
 ( Runs all unit tests and integration tests )
 
 ## Build distribution
-`mvn package`
+`./gradlew assemble`
 ( Find a fat JAR in the target folder )
   
 
