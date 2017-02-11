@@ -38,7 +38,20 @@ bootRun {
 }
 
 task triggerJob << {
-    print "from env: " + System.getenv().hasProperty('web.apiKey')
+    print ""
+    print "----"
+    print "from env: " + System.getenv()
+    print "----"
+    print ""
+    print ""
+    print "----"
+    print "from sys: " + System.properties
+    print "----"
+    print ""
+    print ""
+    print "----"
+    print "from prop: " + properties
+    print "----"
 
     if (System.properties['web.apiKey']) {
         print "Running media organizer"
