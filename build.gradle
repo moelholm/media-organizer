@@ -36,3 +36,14 @@ dependencies {
 bootRun {
     systemProperties = System.properties
 }
+
+task triggerJob << {
+    if (System.properties['apiKey']) {
+        print "Running media organizer"
+        "https://media-organizer.herokuapp.com/api/mediaorganizer/trigger"
+                .toURL()
+                .getText(requestProperties: [Authorization: System.properties['apiKey']])
+    } else {
+        logger.error "Did not find apiKey in System properties!"
+    }
+}
