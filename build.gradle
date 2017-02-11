@@ -38,6 +38,8 @@ bootRun {
 }
 
 task triggerJob << {
+    print "from env: " + System.getenv().hasProperty('apiKey')
+
     if (System.properties['apiKey']) {
         print "Running media organizer"
         "https://media-organizer.herokuapp.com/api/mediaorganizer/trigger"
