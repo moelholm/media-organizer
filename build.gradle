@@ -40,17 +40,8 @@ bootRun {
 task triggerJob << {
     print ""
     print "----"
-    print "from env: " + System.getenv()
-    print "----"
-    print ""
-    print ""
-    print "----"
-    print "from sys: " + System.properties
-    print "----"
-    print ""
-    print ""
-    print "----"
-    print "from prop: " + properties
+    print "from env: " + System.getenv().hasProperty('web.apiKey')
+    print "from env: " + System.getenv('web.apiKey')
     print "----"
 
     if (System.properties['web.apiKey']) {
