@@ -7,10 +7,6 @@ import java.util.stream.Stream;
 
 public class LocalFileSystem implements FileSystem {
 
-    // --------------------------------------------------------------------------------------------------------------------------------------------
-    // Public API
-    // --------------------------------------------------------------------------------------------------------------------------------------------
-
     @Override
     public boolean isExistingDirectory(Path pathToTest) {
         return (pathToTest != null) && (pathToTest.toFile().isDirectory());
@@ -31,13 +27,10 @@ public class LocalFileSystem implements FileSystem {
         Files.move(from, to);
     }
 
-    // --------------------------------------------------------------------------------------------------------------------------------------------
-    // Private functionality
-    // --------------------------------------------------------------------------------------------------------------------------------------------
-
     private void ensureDirectoryStructureExists(Path directoryPath) {
         if (directoryPath != null && !directoryPath.toFile().exists()) {
             directoryPath.toFile().mkdirs();
         }
     }
+
 }

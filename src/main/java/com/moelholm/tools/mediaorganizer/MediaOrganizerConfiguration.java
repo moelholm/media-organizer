@@ -1,62 +1,62 @@
 package com.moelholm.tools.mediaorganizer;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 @Component
 public class MediaOrganizerConfiguration {
 
-    @Value("${daemon.scheduleAsCronExpression}")
-    private String scheduleAsCronExpression;
+  @Value("${daemon.scheduleAsCronExpression}")
+  private String scheduleAsCronExpression;
 
-    @Value("${mediafiles.datepattern}")
-    private String mediaFilesDatePattern;
+  @Value("${mediafiles.datepattern}")
+  private String mediaFilesDatePattern;
 
-    @Value("${mediafiles.mediaFileExtensionsToMatch}")
-    private String[] mediaFileExtensionsToMatch;
+  @Value("${mediafiles.mediaFileExtensionsToMatch}")
+  private String[] mediaFileExtensionsToMatch;
 
-    @Value("${destination.amountOfMediaFilesIndicatingAnEvent}")
-    private int amountOfMediaFilesIndicatingAnEvent;
+  @Value("${destination.amountOfMediaFilesIndicatingAnEvent}")
+  private int amountOfMediaFilesIndicatingAnEvent;
 
-    @Value("${destination.localeForGeneratingDestinationFolderNames}")
-    private Locale locale;
+  @Value("${destination.localeForGeneratingDestinationFolderNames}")
+  private Locale locale;
 
-    @Value("${destination.suffixForDestinationFolderOfUnknownEventMediaFiles}")
-    private String suffixForDestinationFolderOfUnknownEventMediaFiles;
+  @Value("${destination.suffixForDestinationFolderOfUnknownEventMediaFiles}")
+  private String suffixForDestinationFolderOfUnknownEventMediaFiles;
 
-    @Value("${destination.suffixForDestinationFolderOfMiscMediaFiles}")
-    private String suffixForDestinationFolderOfMiscMediaFiles;
+  @Value("${destination.suffixForDestinationFolderOfMiscMediaFiles}")
+  private String suffixForDestinationFolderOfMiscMediaFiles;
 
-    public String getMediaFilesDatePattern() {
-        return mediaFilesDatePattern;
-    }
+  public String getMediaFilesDatePattern() {
+    return mediaFilesDatePattern;
+  }
 
-    public List<String> getMediaFileExtensionsToMatch() {
-        return Arrays.asList(mediaFileExtensionsToMatch);
-    }
+  public List<String> getMediaFileExtensionsToMatch() {
+    return Arrays.asList(mediaFileExtensionsToMatch);
+  }
 
-    public int getAmountOfMediaFilesIndicatingAnEvent() {
-        return amountOfMediaFilesIndicatingAnEvent;
-    }
+  public int getAmountOfMediaFilesIndicatingAnEvent() {
+    return amountOfMediaFilesIndicatingAnEvent;
+  }
 
-    public Locale getLocale() {
-        return locale;
-    }
+  public Locale getLocale() {
+    return locale;
+  }
 
-    public String getSuffixForDestinationFolderOfUnknownEventMediaFiles() {
-        return suffixForDestinationFolderOfUnknownEventMediaFiles;
-    }
+  public String getSuffixForDestinationFolderOfUnknownEventMediaFiles() {
+    return suffixForDestinationFolderOfUnknownEventMediaFiles;
+  }
 
-    public String getSuffixForDestinationFolderOfMiscMediaFiles() {
-        return suffixForDestinationFolderOfMiscMediaFiles;
-    }
+  public String getSuffixForDestinationFolderOfMiscMediaFiles() {
+    return suffixForDestinationFolderOfMiscMediaFiles;
+  }
 
-    public String getScheduleAsCronExpression() {
-        return scheduleAsCronExpression;
-    }
+  public String getScheduleAsCronExpression() {
+    return scheduleAsCronExpression;
+  }
 
 }

@@ -18,80 +18,98 @@ import javax.annotation.PostConstruct;
 @SpringBootApplication
 public class Main {
 
-    // --------------------------------------------------------------------------------------------------------------------------------------------
-    // Constants
-    // --------------------------------------------------------------------------------------------------------------------------------------------
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
+  @Autowired
+  private Environment environment;
 
-    // --------------------------------------------------------------------------------------------------------------------------------------------
-    // Member fields
-    // --------------------------------------------------------------------------------------------------------------------------------------------
+  @Autowired
+  private MediaOrganizer organizer;
 
-    @Autowired
-    private Environment environment;
+  public static void main(String[] args) {
+    SpringApplication.run(Main.class, args);
+  }
 
-    @Autowired
-    private MediaOrganizer organizer;
+  @PostConstruct
+  public void started() {
 
-    // --------------------------------------------------------------------------------------------------------------------------------------------
-    // Public API
-    // --------------------------------------------------------------------------------------------------------------------------------------------
+    boolean startedWithMandatoryArguments = (environment.containsProperty(MainArgument.FROM_DIR.getArgumentName())
+        && environment.containsProperty(MainArgument.TO_DIR.getArgumentName()));
 
-    public static void main(String[] args) {
-        SpringApplication.run(Main.class, args);
+    if (!startedWithMandatoryArguments) {
+      printUsageAndExit();
+      return;
     }
 
-    @PostConstruct
-    public void started() {
+    String runMode = environment.getProperty(MainArgument.RUNMODE.getArgumentName());
+    FileSystemType fileSystemType = FileSystemType.fromString(environment.getProperty(MainArgument.FILESYSTEM_TYPE.getArgumentName()));
+    String fromDir = environment.getProperty(MainArgument.FROM_DIR.getArgumentName());
+    String toDir = environment.getProperty(MainArgument.TO_DIR.getArgumentName());
 
-        boolean startedWithMandatoryArguments = (environment.containsProperty(MainArgument.FROM_DIR.getArgumentName())
-                && environment.containsProperty(MainArgument.TO_DIR.getArgumentName()));
+    printApplicationStartedMessage(fromDir, toDir, runMode, fileSystemType);
 
-        if (!startedWithMandatoryArguments) {
-            printUsage();
-            return;
-        }
+    runMode = (runMode == null) ? "once" : runMode;
 
-        boolean daemonRunMode = environment.containsProperty(MainArgument.DAEMON_RUNMODE.getArgumentName());
-        FileSystemType fileSystemType = FileSystemType.fromString(environment.getProperty(MainArgument.FILESYSTEM_TYPE.getArgumentName()));
-        String fromDir = environment.getProperty(MainArgument.FROM_DIR.getArgumentName());
-        String toDir = environment.getProperty(MainArgument.TO_DIR.getArgumentName());
-
-        printApplicationStartedMessage(fromDir, toDir, daemonRunMode, fileSystemType);
-
-        if (daemonRunMode) {
-            organizer.scheduleUndoFlatMess(Paths.get(fromDir), Paths.get(toDir));
-        } else {
-            organizer.asyncUndoFlatMess(Paths.get(fromDir), Paths.get(toDir));
-        }
+    if ("daemon".equalsIgnoreCase(runMode)) {
+      runAsDaemon(fromDir, toDir);
+    } else if ("once".equalsIgnoreCase(runMode)) {
+      runOnce(fromDir, toDir);
+    } else if ("web".equalsIgnoreCase(runMode)) {
+      runInWebMode();
+    } else {
+      logValidationErrorAndExit(runMode);
     }
+  }
 
-    // --------------------------------------------------------------------------------------------------------------------------------------------
-    // Private functionality
-    // --------------------------------------------------------------------------------------------------------------------------------------------
+  private void runInWebMode() {
+    logger.info("Running in 'web' mode - awaiting run signals on HTTP endpoint");
+  }
 
-    private void printApplicationStartedMessage(String fromDir, String toDir, boolean daemonRunMode, FileSystemType fileSystemType) {
-        LOG.info("");
-        LOG.info("Application started with the following arguments:");
-        LOG.info("    --{} ? {}", MainArgument.DAEMON_RUNMODE.getArgumentName(), daemonRunMode ? "yes" : "no");
-        LOG.info("    --{} = {}", MainArgument.FILESYSTEM_TYPE.getArgumentName(), fileSystemType.toString().toLowerCase());
-        LOG.info("    --{} = {}", MainArgument.FROM_DIR.getArgumentName(), fromDir);
-        LOG.info("    --{}   = {}", MainArgument.TO_DIR.getArgumentName(), toDir);
-        LOG.info("");
+  private void logValidationErrorAndExit(String runMode) {
+    logger.warn("Unknown run mode [{}]. Exiting application", runMode);
+    System.exit(-1);
+  }
+
+  private void runOnce(String fromDir, String toDir) {
+    try {
+      logger.info("Running in 'once' mode");
+      organizer.undoFlatMess(Paths.get(fromDir), Paths.get(toDir));
+    } catch (Exception e) {
+      logger.warn("Exiting application with error", e);
+    } finally {
+      logger.info("Exiting application");
     }
+    System.exit(0);
+  }
 
-    private void printUsage() {
-        LOG.info("");
-        LOG.info("Usage: Main --{}=[dir to copy from] --{}=[dir to copy to] [--daemon] [--{}=[type]]", MainArgument.FROM_DIR.getArgumentName(),
-                MainArgument.TO_DIR.getArgumentName(), MainArgument.FILESYSTEM_TYPE.getArgumentName());
-        LOG.info("");
-        LOG.info("  Where:");
-        LOG.info("");
-        LOG.info("    --{} specifies the folder that contains your media files", MainArgument.FROM_DIR.getArgumentName());
-        LOG.info("    --{}   specifies the folder that should contain the organized media files", MainArgument.TO_DIR.getArgumentName());
-        LOG.info("    --{}   specifies if the application should run as a daemon", MainArgument.DAEMON_RUNMODE.getArgumentName());
-        LOG.info("    --{}   specifies the filesystem: 'local' or 'dropbox' (without quotes)", MainArgument.FILESYSTEM_TYPE.getArgumentName());
-        LOG.info("");
-    }
+  private void runAsDaemon(String fromDir, String toDir) {
+    logger.info("Running in 'daemon' mode");
+    organizer.scheduleUndoFlatMess(Paths.get(fromDir), Paths.get(toDir));
+  }
+
+  private void printApplicationStartedMessage(String fromDir, String toDir, String runMode, FileSystemType fileSystemType) {
+    logger.info("");
+    logger.info("Application started with the following arguments:");
+    logger.info("    --{} = {}", MainArgument.RUNMODE.getArgumentName(), runMode);
+    logger.info("    --{} = {}", MainArgument.FILESYSTEM_TYPE.getArgumentName(), fileSystemType.toString().toLowerCase());
+    logger.info("    --{} = {}", MainArgument.FROM_DIR.getArgumentName(), fromDir);
+    logger.info("    --{}   = {}", MainArgument.TO_DIR.getArgumentName(), toDir);
+    logger.info("");
+  }
+
+  private void printUsageAndExit() {
+    logger.info("");
+    logger.info("Usage: Main --{}=[dir to copy from] --{}=[dir to copy to] [--{}=[mode]] [--{}=[type]]", MainArgument.FROM_DIR.getArgumentName(),
+                MainArgument.TO_DIR.getArgumentName(), MainArgument.RUNMODE.getArgumentName(), MainArgument.FILESYSTEM_TYPE.getArgumentName());
+    logger.info("");
+    logger.info("  Where:");
+    logger.info("");
+    logger.info("    --{} folder that contains your media files", MainArgument.FROM_DIR.getArgumentName());
+    logger.info("    --{} folder that should contain the organized media files", MainArgument.TO_DIR.getArgumentName());
+    logger.info("    --{} One of: [once, daemon, web]. Default is once", MainArgument.RUNMODE.getArgumentName());
+    logger.info("    --{} One of: [local, dropbox]. Default is local", MainArgument.FILESYSTEM_TYPE.getArgumentName());
+    logger.info("");
+    System.exit(0);
+  }
+
 }

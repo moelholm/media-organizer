@@ -12,18 +12,10 @@ import com.moelholm.tools.mediaorganizer.filesystem.FileSystemType;
 import com.moelholm.tools.mediaorganizer.filesystem.LocalFileSystem;
 
 @Configuration
-public class BeanConfiguration {
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------
-    // Member fields
-    // --------------------------------------------------------------------------------------------------------------------------------------------
+public class BeanConfig {
 
     @Autowired
     private Environment environment;
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------
-    // @Bean producers
-    // --------------------------------------------------------------------------------------------------------------------------------------------
 
     @Bean
     public ThreadPoolTaskScheduler taskScheduler() {
