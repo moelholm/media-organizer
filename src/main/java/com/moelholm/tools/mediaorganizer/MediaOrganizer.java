@@ -66,9 +66,9 @@ public class MediaOrganizer {
 
     logger.info("Moving files from [{}] to [{}]", from, to);
 
-    fileSystem.streamOfAllFilesFromPath(from) //
-        .filter(selectMediaFiles())//
-        .collect(groupByYearMonthDayString()) //
+    fileSystem.streamOfAllFilesFromPath(from)
+        .filter(selectMediaFiles())
+        .collect(groupByYearMonthDayString())
         .forEach((yearMonthDayString, mediaFilePathList) -> {
 
           logger.info("Processing [{}] which has [{}] media files", yearMonthDayString, mediaFilePathList.size());
@@ -77,7 +77,7 @@ public class MediaOrganizer {
 
           Path destinationDirectoryPath = to.resolve(destinationDirectoryName);
 
-          mediaFilePathList.parallelStream()//
+          mediaFilePathList.stream()
               .forEach(mediaFilePath -> move(mediaFilePath, destinationDirectoryPath.resolve(mediaFilePath.getFileName())));
         });
   }
