@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 public class LocalFileSystem implements FileSystem {
 
     @Override
-    public boolean isExistingDirectory(Path pathToTest) {
+    public boolean existingDirectory(Path pathToTest) {
         return (pathToTest != null) && (pathToTest.toFile().isDirectory());
     }
 

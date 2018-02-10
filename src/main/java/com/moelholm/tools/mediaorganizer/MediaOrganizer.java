@@ -95,12 +95,12 @@ public class MediaOrganizer {
 
     boolean result = false;
 
-    if (!fileSystem.isExistingDirectory(from)) {
+    if (!fileSystem.existingDirectory(from)) {
       logger.info("Argument [from] is not an existing directory");
       result = true;
     }
 
-    if (!fileSystem.isExistingDirectory(to)) {
+    if (!fileSystem.existingDirectory(to)) {
       logger.info("Argument [to] is not an existing directory");
       result = true;
     }

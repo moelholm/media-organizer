@@ -38,7 +38,7 @@ public class DropboxFileSystem implements FileSystem {
     // --------------------------------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public boolean isExistingDirectory(Path pathToTest) {
+    public boolean existingDirectory(Path pathToTest) {
         try {
             String dropboxPathToTest = toAbsoluteDropboxPath(pathToTest);
             DropboxFileRequest dropBoxRequest = new DropboxFileRequest(dropboxPathToTest);
