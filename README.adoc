@@ -1,5 +1,7 @@
 A tool for organizing photos and videos into my personal favorite layout.
 
+image:https://travis-ci.org/moelholm/media-organizer.svg?branch=master["Build Status", link="https://travis-ci.org/moelholm/media-organizer"]
+
 # Run with Docker ( users )
 `docker run -e "FROMDIR=/mnt/input" -e "TODIR=/mnt/output" -v target/input:/mnt/input -v target/output:/mnt/output nickymoelholm/media-organizer`
 
