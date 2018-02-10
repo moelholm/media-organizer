@@ -2,6 +2,7 @@
 # Default configuration file.
 #
 #
+spring.profiles.active: production
 
 daemon:
   #
