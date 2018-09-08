@@ -1,11 +1,10 @@
 package com.moelholm.tools.mediaorganizer;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Component
 public class MediaOrganizerConfiguration {
@@ -58,5 +57,4 @@ public class MediaOrganizerConfiguration {
   public String getScheduleAsCronExpression() {
     return scheduleAsCronExpression;
   }
-
 }

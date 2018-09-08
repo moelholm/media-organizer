@@ -16,17 +16,15 @@ public class StartListener {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  @Autowired
-  private Environment environment;
+  @Autowired private Environment environment;
 
-  @Autowired
-  private MediaOrganizer organizer;
+  @Autowired private MediaOrganizer organizer;
 
   @PostConstruct
   public void started() {
 
-    boolean startedWithMandatoryArguments = (
-        environment.containsProperty(MainArgument.FROM_DIR.getArgumentName())
+    boolean startedWithMandatoryArguments =
+        (environment.containsProperty(MainArgument.FROM_DIR.getArgumentName())
             && environment.containsProperty(MainArgument.TO_DIR.getArgumentName()));
 
     if (!startedWithMandatoryArguments) {
@@ -35,8 +33,9 @@ public class StartListener {
     }
 
     String runMode = environment.getProperty(MainArgument.RUNMODE.getArgumentName());
-    FileSystemType fileSystemType = FileSystemType
-        .fromString(environment.getProperty(MainArgument.FILESYSTEM_TYPE.getArgumentName()));
+    FileSystemType fileSystemType =
+        FileSystemType.fromString(
+            environment.getProperty(MainArgument.FILESYSTEM_TYPE.getArgumentName()));
     String fromDir = environment.getProperty(MainArgument.FROM_DIR.getArgumentName());
     String toDir = environment.getProperty(MainArgument.TO_DIR.getArgumentName());
 
@@ -81,12 +80,14 @@ public class StartListener {
     organizer.scheduleUndoFlatMess(Paths.get(fromDir), Paths.get(toDir));
   }
 
-  private void printApplicationStartedMessage(String fromDir, String toDir, String runMode,
-      FileSystemType fileSystemType) {
+  private void printApplicationStartedMessage(
+      String fromDir, String toDir, String runMode, FileSystemType fileSystemType) {
     logger.info("");
     logger.info("Application started with the following arguments:");
     logger.info("    --{} = {}", MainArgument.RUNMODE.getArgumentName(), runMode);
-    logger.info("    --{} = {}", MainArgument.FILESYSTEM_TYPE.getArgumentName(),
+    logger.info(
+        "    --{} = {}",
+        MainArgument.FILESYSTEM_TYPE.getArgumentName(),
         fileSystemType.toString().toLowerCase());
     logger.info("    --{} = {}", MainArgument.FROM_DIR.getArgumentName(), fromDir);
     logger.info("    --{}   = {}", MainArgument.TO_DIR.getArgumentName(), toDir);
@@ -98,18 +99,22 @@ public class StartListener {
     logger.info(
         "Usage: Main --{}=[dir to copy from] --{}=[dir to copy to] [--{}=[mode]] [--{}=[type]]",
         MainArgument.FROM_DIR.getArgumentName(),
-        MainArgument.TO_DIR.getArgumentName(), MainArgument.RUNMODE.getArgumentName(),
+        MainArgument.TO_DIR.getArgumentName(),
+        MainArgument.RUNMODE.getArgumentName(),
         MainArgument.FILESYSTEM_TYPE.getArgumentName());
     logger.info("");
     logger.info("  Where:");
     logger.info("");
-    logger.info("    --{} folder that contains your media files",
-        MainArgument.FROM_DIR.getArgumentName());
-    logger.info("    --{} folder that should contain the organized media files",
+    logger.info(
+        "    --{} folder that contains your media files", MainArgument.FROM_DIR.getArgumentName());
+    logger.info(
+        "    --{} folder that should contain the organized media files",
         MainArgument.TO_DIR.getArgumentName());
-    logger.info("    --{} One of: [once, daemon, web]. Default is once",
+    logger.info(
+        "    --{} One of: [once, daemon, web]. Default is once",
         MainArgument.RUNMODE.getArgumentName());
-    logger.info("    --{} One of: [local, dropbox]. Default is local",
+    logger.info(
+        "    --{} One of: [local, dropbox]. Default is local",
         MainArgument.FILESYSTEM_TYPE.getArgumentName());
     logger.info("");
     System.exit(0);

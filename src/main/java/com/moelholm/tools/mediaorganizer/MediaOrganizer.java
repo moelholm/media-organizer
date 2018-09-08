@@ -1,15 +1,6 @@
 package com.moelholm.tools.mediaorganizer;
 
 import com.moelholm.tools.mediaorganizer.filesystem.FileSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.support.CronTrigger;
-import org.springframework.scheduling.support.SimpleTriggerContext;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
@@ -24,20 +15,25 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.support.CronTrigger;
+import org.springframework.scheduling.support.SimpleTriggerContext;
+import org.springframework.stereotype.Component;
 
 @Component
 public class MediaOrganizer {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  @Autowired
-  private MediaOrganizerConfiguration configuration;
+  @Autowired private MediaOrganizerConfiguration configuration;
 
-  @Autowired
-  private TaskScheduler scheduler;
+  @Autowired private TaskScheduler scheduler;
 
-  @Autowired
-  private FileSystem fileSystem;
+  @Autowired private FileSystem fileSystem;
 
   public void scheduleUndoFlatMess(Path from, Path to) {
 
@@ -66,20 +62,30 @@ public class MediaOrganizer {
 
     logger.info("Moving files from [{}] to [{}]", from, to);
 
-    fileSystem.streamOfAllFilesFromPath(from)
+    fileSystem
+        .streamOfAllFilesFromPath(from)
         .filter(selectMediaFiles())
         .collect(groupByYearMonthDayString())
-        .forEach((yearMonthDayString, mediaFilePathList) -> {
+        .forEach(
+            (yearMonthDayString, mediaFilePathList) -> {
+              logger.info(
+                  "Processing [{}] which has [{}] media files",
+                  yearMonthDayString,
+                  mediaFilePathList.size());
 
-          logger.info("Processing [{}] which has [{}] media files", yearMonthDayString, mediaFilePathList.size());
+              String destinationDirectoryName =
+                  generateFinalDestinationDirectoryName(yearMonthDayString, mediaFilePathList);
 
-          String destinationDirectoryName = generateFinalDestinationDirectoryName(yearMonthDayString, mediaFilePathList);
+              Path destinationDirectoryPath = to.resolve(destinationDirectoryName);
 
-          Path destinationDirectoryPath = to.resolve(destinationDirectoryName);
-
-          mediaFilePathList.stream()
-              .forEach(mediaFilePath -> move(mediaFilePath, destinationDirectoryPath.resolve(mediaFilePath.getFileName())));
-        });
+              mediaFilePathList
+                  .stream()
+                  .forEach(
+                      mediaFilePath ->
+                          move(
+                              mediaFilePath,
+                              destinationDirectoryPath.resolve(mediaFilePath.getFileName())));
+            });
   }
 
   private Collector<Path, ?, Map<String, List<Path>>> groupByYearMonthDayString() {
@@ -87,8 +93,13 @@ public class MediaOrganizer {
   }
 
   private Predicate<? super Path> selectMediaFiles() {
-    return path -> configuration.getMediaFileExtensionsToMatch().stream()//
-        .anyMatch(fileExtension -> path.toString().toLowerCase().endsWith(String.format(".%s", fileExtension)));
+    return path ->
+        configuration
+            .getMediaFileExtensionsToMatch()
+            .stream() //
+            .anyMatch(
+                fileExtension ->
+                    path.toString().toLowerCase().endsWith(String.format(".%s", fileExtension)));
   }
 
   private boolean hasInvalidParameters(Path from, Path to) {
@@ -119,20 +130,25 @@ public class MediaOrganizer {
     dateCal.setTime(date);
 
     int year = dateCal.get(Calendar.YEAR);
-    String month = new DateFormatSymbols(configuration.getLocale()).getMonths()[dateCal.get(Calendar.MONTH)];
+    String month =
+        new DateFormatSymbols(configuration.getLocale()).getMonths()[dateCal.get(Calendar.MONTH)];
     month = Character.toUpperCase(month.charAt(0)) + month.substring(1);
     int day = dateCal.get(Calendar.DAY_OF_MONTH);
 
     return String.format("%s - %s - %s", year, month, day);
   }
 
-  private String generateFinalDestinationDirectoryName(String folderName, List<Path> mediaFilePaths) {
+  private String generateFinalDestinationDirectoryName(
+      String folderName, List<Path> mediaFilePaths) {
     String lastPartOfFolderName = "( - \\d+)$";
     String replaceWithNewLastPartOfFolderName;
     if (mediaFilePaths.size() >= configuration.getAmountOfMediaFilesIndicatingAnEvent()) {
-      replaceWithNewLastPartOfFolderName = String.format("$1 - %s", configuration.getSuffixForDestinationFolderOfUnknownEventMediaFiles());
+      replaceWithNewLastPartOfFolderName =
+          String.format(
+              "$1 - %s", configuration.getSuffixForDestinationFolderOfUnknownEventMediaFiles());
     } else {
-      replaceWithNewLastPartOfFolderName = String.format(" - %s", configuration.getSuffixForDestinationFolderOfMiscMediaFiles());
+      replaceWithNewLastPartOfFolderName =
+          String.format(" - %s", configuration.getSuffixForDestinationFolderOfMiscMediaFiles());
     }
     return folderName.replaceAll(lastPartOfFolderName, replaceWithNewLastPartOfFolderName);
   }
@@ -156,10 +172,15 @@ public class MediaOrganizer {
       logger.info("    {}", pathThatFileShouldBeMovedTo.getFileName());
       fileSystem.move(fileToMove, pathThatFileShouldBeMovedTo);
     } catch (FileAlreadyExistsException e) {
-      logger.info("File [{}] exists at destination folder - so skipping that", pathThatFileShouldBeMovedTo.getFileName());
+      logger.info(
+          "File [{}] exists at destination folder - so skipping that",
+          pathThatFileShouldBeMovedTo.getFileName());
     } catch (IOException e) {
-      logger.warn(String.format("Failed to move file from [%s] to [%s]", pathThatFileShouldBeMovedTo, pathThatFileShouldBeMovedTo), e);
+      logger.warn(
+          String.format(
+              "Failed to move file from [%s] to [%s]",
+              pathThatFileShouldBeMovedTo, pathThatFileShouldBeMovedTo),
+          e);
     }
   }
-
 }

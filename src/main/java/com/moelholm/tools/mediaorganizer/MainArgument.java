@@ -1,8 +1,10 @@
 package com.moelholm.tools.mediaorganizer;
 
 public enum MainArgument {
-
-  RUNMODE("runMode"), FILESYSTEM_TYPE("fileSystemType"), FROM_DIR("fromDir"), TO_DIR("toDir");
+  RUNMODE("runMode"),
+  FILESYSTEM_TYPE("fileSystemType"),
+  FROM_DIR("fromDir"),
+  TO_DIR("toDir");
 
   MainArgument(String argumentName) {
     this.argumentName = argumentName;
@@ -13,5 +15,4 @@ public enum MainArgument {
   public String getArgumentName() {
     return argumentName;
   }
-
 }

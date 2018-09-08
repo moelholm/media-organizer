@@ -11,6 +11,10 @@ buildscript {
     }
 }
 
+plugins {
+    id 'com.github.sherter.google-java-format' version '0.7.1'
+}
+
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
 
@@ -32,6 +36,9 @@ dependencies {
     testCompile "org.springframework.boot:spring-boot-starter-test"
 
 }
+
+compileJava.dependsOn verifyGoogleJavaFormat
+compileTestJava.dependsOn verifyGoogleJavaFormat
 
 task triggerJob << {
 
