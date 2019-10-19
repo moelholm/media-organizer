@@ -11,12 +11,12 @@ plugins {
 	id 'java'
 }
 
-apply plugin: 'java'
-apply plugin: 'org.springframework.boot'
-
 group 'com.moelholm'
 
 sourceCompatibility = 1.8
+
+compileJava.dependsOn spotlessCheck
+compileTestJava.dependsOn spotlessCheck
 
 repositories {
     mavenCentral()
