@@ -27,160 +27,164 @@ import org.springframework.stereotype.Component;
 @Component
 public class MediaOrganizer {
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  @Autowired private MediaOrganizerConfiguration configuration;
+    @Autowired private MediaOrganizerConfiguration configuration;
 
-  @Autowired private TaskScheduler scheduler;
+    @Autowired private TaskScheduler scheduler;
 
-  @Autowired private FileSystem fileSystem;
+    @Autowired private FileSystem fileSystem;
 
-  public void scheduleUndoFlatMess(Path from, Path to) {
+    public void scheduleUndoFlatMess(Path from, Path to) {
 
-    if (hasInvalidParameters(from, to)) {
-      return;
+        if (hasInvalidParameters(from, to)) {
+            return;
+        }
+
+        CronTrigger trigger = new CronTrigger(configuration.getScheduleAsCronExpression());
+        scheduler.schedule(() -> undoFlatMess(from, to), trigger);
+
+        logger.info("Scheduled job that will move files from [{}] to [{}]", from, to);
+        Date nextExecutionTime = trigger.nextExecutionTime(new SimpleTriggerContext());
+        logger.info("    - Job will start at [{}]", formatDateAsString(nextExecutionTime));
     }
 
-    CronTrigger trigger = new CronTrigger(configuration.getScheduleAsCronExpression());
-    scheduler.schedule(() -> undoFlatMess(from, to), trigger);
-
-    logger.info("Scheduled job that will move files from [{}] to [{}]", from, to);
-    Date nextExecutionTime = trigger.nextExecutionTime(new SimpleTriggerContext());
-    logger.info("    - Job will start at [{}]", formatDateAsString(nextExecutionTime));
-  }
-
-  @Async
-  public void asyncUndoFlatMess(Path from, Path to) {
-    undoFlatMess(from, to);
-  }
-
-  public void undoFlatMess(Path from, Path to) {
-
-    if (hasInvalidParameters(from, to)) {
-      return;
+    @Async
+    public void asyncUndoFlatMess(Path from, Path to) {
+        undoFlatMess(from, to);
     }
 
-    logger.info("Moving files from [{}] to [{}]", from, to);
+    public void undoFlatMess(Path from, Path to) {
 
-    fileSystem
-        .streamOfAllFilesFromPath(from)
-        .filter(selectMediaFiles())
-        .collect(groupByYearMonthDayString())
-        .forEach(
-            (yearMonthDayString, mediaFilePathList) -> {
-              logger.info(
-                  "Processing [{}] which has [{}] media files",
-                  yearMonthDayString,
-                  mediaFilePathList.size());
+        if (hasInvalidParameters(from, to)) {
+            return;
+        }
 
-              String destinationDirectoryName =
-                  generateFinalDestinationDirectoryName(yearMonthDayString, mediaFilePathList);
+        logger.info("Moving files from [{}] to [{}]", from, to);
 
-              Path destinationDirectoryPath = to.resolve(destinationDirectoryName);
+        fileSystem
+                .streamOfAllFilesFromPath(from)
+                .filter(selectMediaFiles())
+                .collect(groupByYearMonthDayString())
+                .forEach(
+                        (yearMonthDayString, mediaFilePathList) -> {
+                            logger.info(
+                                    "Processing [{}] which has [{}] media files",
+                                    yearMonthDayString,
+                                    mediaFilePathList.size());
 
-              mediaFilePathList
-                  .stream()
-                  .forEach(
-                      mediaFilePath ->
-                          move(
-                              mediaFilePath,
-                              destinationDirectoryPath.resolve(mediaFilePath.getFileName())));
-            });
-  }
+                            String destinationDirectoryName =
+                                    generateFinalDestinationDirectoryName(
+                                            yearMonthDayString, mediaFilePathList);
 
-  private Collector<Path, ?, Map<String, List<Path>>> groupByYearMonthDayString() {
-    return Collectors.groupingBy(this::toYearMonthDayString);
-  }
+                            Path destinationDirectoryPath = to.resolve(destinationDirectoryName);
 
-  private Predicate<? super Path> selectMediaFiles() {
-    return path ->
-        configuration
-            .getMediaFileExtensionsToMatch()
-            .stream() //
-            .anyMatch(
-                fileExtension ->
-                    path.toString().toLowerCase().endsWith(String.format(".%s", fileExtension)));
-  }
-
-  private boolean hasInvalidParameters(Path from, Path to) {
-
-    boolean result = false;
-
-    if (!fileSystem.existingDirectory(from)) {
-      logger.info("Argument [from] is not an existing directory");
-      result = true;
+                            mediaFilePathList.stream()
+                                    .forEach(
+                                            mediaFilePath ->
+                                                    move(
+                                                            mediaFilePath,
+                                                            destinationDirectoryPath.resolve(
+                                                                    mediaFilePath.getFileName())));
+                        });
     }
 
-    if (!fileSystem.existingDirectory(to)) {
-      logger.info("Argument [to] is not an existing directory");
-      result = true;
+    private Collector<Path, ?, Map<String, List<Path>>> groupByYearMonthDayString() {
+        return Collectors.groupingBy(this::toYearMonthDayString);
     }
 
-    return result;
-  }
-
-  private String toYearMonthDayString(Path path) {
-    Date date = parseDateFromPathName(path);
-
-    if (date == null) {
-      return "unknown";
+    private Predicate<? super Path> selectMediaFiles() {
+        return path ->
+                configuration.getMediaFileExtensionsToMatch().stream() //
+                        .anyMatch(
+                                fileExtension ->
+                                        path.toString()
+                                                .toLowerCase()
+                                                .endsWith(String.format(".%s", fileExtension)));
     }
 
-    Calendar dateCal = Calendar.getInstance();
-    dateCal.setTime(date);
+    private boolean hasInvalidParameters(Path from, Path to) {
 
-    int year = dateCal.get(Calendar.YEAR);
-    String month =
-        new DateFormatSymbols(configuration.getLocale()).getMonths()[dateCal.get(Calendar.MONTH)];
-    month = Character.toUpperCase(month.charAt(0)) + month.substring(1);
-    int day = dateCal.get(Calendar.DAY_OF_MONTH);
+        boolean result = false;
 
-    return String.format("%s - %s - %s", year, month, day);
-  }
+        if (!fileSystem.existingDirectory(from)) {
+            logger.info("Argument [from] is not an existing directory");
+            result = true;
+        }
 
-  private String generateFinalDestinationDirectoryName(
-      String folderName, List<Path> mediaFilePaths) {
-    String lastPartOfFolderName = "( - \\d+)$";
-    String replaceWithNewLastPartOfFolderName;
-    if (mediaFilePaths.size() >= configuration.getAmountOfMediaFilesIndicatingAnEvent()) {
-      replaceWithNewLastPartOfFolderName =
-          String.format(
-              "$1 - %s", configuration.getSuffixForDestinationFolderOfUnknownEventMediaFiles());
-    } else {
-      replaceWithNewLastPartOfFolderName =
-          String.format(" - %s", configuration.getSuffixForDestinationFolderOfMiscMediaFiles());
+        if (!fileSystem.existingDirectory(to)) {
+            logger.info("Argument [to] is not an existing directory");
+            result = true;
+        }
+
+        return result;
     }
-    return folderName.replaceAll(lastPartOfFolderName, replaceWithNewLastPartOfFolderName);
-  }
 
-  private Date parseDateFromPathName(Path path) {
-    SimpleDateFormat sdf = new SimpleDateFormat(configuration.getMediaFilesDatePattern());
-    try {
-      return sdf.parse(path.getFileName().toString());
-    } catch (ParseException e) {
-      logger.warn("Failed to extract date from {} (Cause says: {})", path, e.getMessage());
-      return null;
+    private String toYearMonthDayString(Path path) {
+        Date date = parseDateFromPathName(path);
+
+        if (date == null) {
+            return "unknown";
+        }
+
+        Calendar dateCal = Calendar.getInstance();
+        dateCal.setTime(date);
+
+        int year = dateCal.get(Calendar.YEAR);
+        String month =
+                new DateFormatSymbols(configuration.getLocale())
+                        .getMonths()[dateCal.get(Calendar.MONTH)];
+        month = Character.toUpperCase(month.charAt(0)) + month.substring(1);
+        int day = dateCal.get(Calendar.DAY_OF_MONTH);
+
+        return String.format("%s - %s - %s", year, month, day);
     }
-  }
 
-  private String formatDateAsString(Date date) {
-    return DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL).format(date);
-  }
-
-  private void move(Path fileToMove, Path pathThatFileShouldBeMovedTo) {
-    try {
-      logger.info("    {}", pathThatFileShouldBeMovedTo.getFileName());
-      fileSystem.move(fileToMove, pathThatFileShouldBeMovedTo);
-    } catch (FileAlreadyExistsException e) {
-      logger.info(
-          "File [{}] exists at destination folder - so skipping that",
-          pathThatFileShouldBeMovedTo.getFileName());
-    } catch (IOException e) {
-      logger.warn(
-          String.format(
-              "Failed to move file from [%s] to [%s]",
-              pathThatFileShouldBeMovedTo, pathThatFileShouldBeMovedTo),
-          e);
+    private String generateFinalDestinationDirectoryName(
+            String folderName, List<Path> mediaFilePaths) {
+        String lastPartOfFolderName = "( - \\d+)$";
+        String replaceWithNewLastPartOfFolderName;
+        if (mediaFilePaths.size() >= configuration.getAmountOfMediaFilesIndicatingAnEvent()) {
+            replaceWithNewLastPartOfFolderName =
+                    String.format(
+                            "$1 - %s",
+                            configuration.getSuffixForDestinationFolderOfUnknownEventMediaFiles());
+        } else {
+            replaceWithNewLastPartOfFolderName =
+                    String.format(
+                            " - %s", configuration.getSuffixForDestinationFolderOfMiscMediaFiles());
+        }
+        return folderName.replaceAll(lastPartOfFolderName, replaceWithNewLastPartOfFolderName);
     }
-  }
+
+    private Date parseDateFromPathName(Path path) {
+        SimpleDateFormat sdf = new SimpleDateFormat(configuration.getMediaFilesDatePattern());
+        try {
+            return sdf.parse(path.getFileName().toString());
+        } catch (ParseException e) {
+            logger.warn("Failed to extract date from {} (Cause says: {})", path, e.getMessage());
+            return null;
+        }
+    }
+
+    private String formatDateAsString(Date date) {
+        return DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL).format(date);
+    }
+
+    private void move(Path fileToMove, Path pathThatFileShouldBeMovedTo) {
+        try {
+            logger.info("    {}", pathThatFileShouldBeMovedTo.getFileName());
+            fileSystem.move(fileToMove, pathThatFileShouldBeMovedTo);
+        } catch (FileAlreadyExistsException e) {
+            logger.info(
+                    "File [{}] exists at destination folder - so skipping that",
+                    pathThatFileShouldBeMovedTo.getFileName());
+        } catch (IOException e) {
+            logger.warn(
+                    String.format(
+                            "Failed to move file from [%s] to [%s]",
+                            pathThatFileShouldBeMovedTo, pathThatFileShouldBeMovedTo),
+                    e);
+        }
+    }
 }

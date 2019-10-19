@@ -13,21 +13,21 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @Configuration
 public class BeanConfig {
 
-  @Autowired private Environment environment;
+    @Autowired private Environment environment;
 
-  @Bean
-  public ThreadPoolTaskScheduler taskScheduler() {
-    return new ThreadPoolTaskScheduler();
-  }
-
-  @Bean
-  public FileSystem fileSystem() {
-    if (FileSystemType.LOCAL
-        == FileSystemType.fromString(
-            environment.getProperty(MainArgument.FILESYSTEM_TYPE.getArgumentName()))) {
-      return new LocalFileSystem();
-    } else {
-      return new DropboxFileSystem();
+    @Bean
+    public ThreadPoolTaskScheduler taskScheduler() {
+        return new ThreadPoolTaskScheduler();
     }
-  }
+
+    @Bean
+    public FileSystem fileSystem() {
+        if (FileSystemType.LOCAL
+                == FileSystemType.fromString(
+                        environment.getProperty(MainArgument.FILESYSTEM_TYPE.getArgumentName()))) {
+            return new LocalFileSystem();
+        } else {
+            return new DropboxFileSystem();
+        }
+    }
 }

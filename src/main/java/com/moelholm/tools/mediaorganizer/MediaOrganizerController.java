@@ -16,26 +16,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/mediaorganizer")
 public class MediaOrganizerController {
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  @Autowired private Environment environment;
+    @Autowired private Environment environment;
 
-  @Autowired private MediaOrganizer organizer;
+    @Autowired private MediaOrganizer organizer;
 
-  @GetMapping("/trigger")
-  public ResponseEntity<?> runMediaOrganizer(@RequestHeader("Authorization") String apiKey) {
+    @GetMapping("/trigger")
+    public ResponseEntity<?> runMediaOrganizer(@RequestHeader("Authorization") String apiKey) {
 
-    if (!apiKey.equals(environment.getProperty("web.apiKey"))) {
-      logger.warn("Unauthorized request");
-      return new ResponseEntity<String>(HttpStatus.UNAUTHORIZED);
+        if (!apiKey.equals(environment.getProperty("web.apiKey"))) {
+            logger.warn("Unauthorized request");
+            return new ResponseEntity<String>(HttpStatus.UNAUTHORIZED);
+        }
+
+        String fromDir = environment.getProperty(MainArgument.FROM_DIR.getArgumentName());
+
+        String toDir = environment.getProperty(MainArgument.TO_DIR.getArgumentName());
+
+        organizer.asyncUndoFlatMess(Paths.get(fromDir), Paths.get(toDir));
+
+        return new ResponseEntity<String>(HttpStatus.OK);
     }
-
-    String fromDir = environment.getProperty(MainArgument.FROM_DIR.getArgumentName());
-
-    String toDir = environment.getProperty(MainArgument.TO_DIR.getArgumentName());
-
-    organizer.asyncUndoFlatMess(Paths.get(fromDir), Paths.get(toDir));
-
-    return new ResponseEntity<String>(HttpStatus.OK);
-  }
 }
