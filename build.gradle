@@ -1,18 +1,14 @@
 buildscript {
     ext {
-        springBootVersion = '1.5.1.RELEASE'
         commonsLangVersion = '2.4'
-    }
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
     }
 }
 
 plugins {
-    id 'com.github.sherter.google-java-format' version '0.7.1'
+    id "com.diffplug.gradle.spotless" version "3.25.0"
+	id 'org.springframework.boot' version '2.2.0.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+	id 'java'
 }
 
 apply plugin: 'java'
@@ -27,28 +23,36 @@ repositories {
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
 
-    compile "org.springframework.boot:spring-boot-starter-actuator"
-    compile "org.springframework.boot:spring-boot-starter-web"
-    compile "com.fasterxml.jackson.core:jackson-databind"
     compile "commons-lang:commons-lang:${commonsLangVersion}"
-
-    testCompile "org.springframework.boot:spring-boot-starter-test"
-
+    compile "com.fasterxml.jackson.core:jackson-databind"
 }
 
-compileJava.dependsOn verifyGoogleJavaFormat
-compileTestJava.dependsOn verifyGoogleJavaFormat
+test {
+	useJUnitPlatform()
+}
 
-task triggerJob << {
+spotless {
+  java {
+    // aosp (~ 4 spaces per tab instead of the usual 2)
+    googleJavaFormat('1.7').aosp()
+  }
+}
 
-    if (System.getenv('web.apiKey') != null && System.getenv('web.url') != null) {
-        print "Running media organizer"
-        System.getenv("web.url")
-                .toURL()
-                .getText(requestProperties: [Authorization: System.getenv('web.apiKey')])
-    } else {
-        logger.error "Did not find apiKey and/or url in environment variables!"
+task triggerJob {
+    doLast {
+        if (System.getenv('web.apiKey') != null && System.getenv('web.url') != null) {
+            print "Running media organizer"
+            System.getenv("web.url")
+                    .toURL()
+                    .getText(requestProperties: [Authorization: System.getenv('web.apiKey')])
+        } else {
+            logger.error "Did not find apiKey and/or url in environment variables!"
+        }
     }
-
 }
