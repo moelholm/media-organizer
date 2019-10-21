@@ -25,9 +25,9 @@ public class DropboxFileSystem implements FileSystem {
     @Override
     public boolean existingDirectory(Path pathToTest) {
         try {
-            String dropboxPathToTest = toAbsoluteDropboxPath(pathToTest);
-            DropboxFileRequest dropBoxRequest = new DropboxFileRequest(dropboxPathToTest);
-            DropboxFile metaData =
+            var dropboxPathToTest = toAbsoluteDropboxPath(pathToTest);
+            var dropBoxRequest = new DropboxFileRequest(dropboxPathToTest);
+            var metaData =
                     postToDropboxAndGetResponse(
                             "/files/get_metadata", dropBoxRequest, DropboxFile.class);
             return metaData.isDirectory();
@@ -44,9 +44,9 @@ public class DropboxFileSystem implements FileSystem {
     @Override
     public Stream<Path> streamOfAllFilesFromPath(Path from) {
         try {
-            String dropboxPathToTest = toAbsoluteDropboxPath(from);
-            DropboxFileRequest dropBoxRequest = new DropboxFileRequest(dropboxPathToTest);
-            DropboxListFolderResponse listFolderResponse =
+            var dropboxPathToTest = toAbsoluteDropboxPath(from);
+            var dropBoxRequest = new DropboxFileRequest(dropboxPathToTest);
+            var listFolderResponse =
                     postToDropboxAndGetResponse(
                             "/files/list_folder", dropBoxRequest, DropboxListFolderResponse.class);
             return listFolderResponse.getDropboxFiles().stream() //
@@ -62,10 +62,9 @@ public class DropboxFileSystem implements FileSystem {
     @Override
     public void move(Path from, Path to) throws IOException {
         try {
-            String fromDropboxPath = toAbsoluteDropboxPath(from);
-            String toDropboxPath = toAbsoluteDropboxPath(to);
-            DropboxMoveRequest dropBoxRequest =
-                    new DropboxMoveRequest(fromDropboxPath, toDropboxPath);
+            var fromDropboxPath = toAbsoluteDropboxPath(from);
+            var toDropboxPath = toAbsoluteDropboxPath(to);
+            var dropBoxRequest = new DropboxMoveRequest(fromDropboxPath, toDropboxPath);
             postToDropboxAndGetResponse("/files/move", dropBoxRequest, DropboxFile.class);
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.CONFLICT) {
@@ -83,7 +82,7 @@ public class DropboxFileSystem implements FileSystem {
     }
 
     private RestTemplate createRestTemplate() {
-        RestTemplate restTemplate = new RestTemplate();
+        var restTemplate = new RestTemplate();
         restTemplate.setInterceptors(
                 Collections.singletonList(
                         (request, bytes, execution) -> {
@@ -105,23 +104,23 @@ public class DropboxFileSystem implements FileSystem {
     private <T> T postToDropboxAndGetResponse(String path, Object arg, Class<T> responseType)
             throws IOException {
 
-        String resultJsonString =
+        var resultJsonString =
                 createRestTemplate()
                         .postForObject(
                                 String.format("https://api.dropboxapi.com/2%s", path),
                                 arg,
                                 String.class);
 
-        // Note (!) : this is a workaround for an ...ahem temporary issue... with getting the Java
+        // Note (!) : this is a workaround for an ...ahem temporary issue... with
+        // getting the Java
         // POJO
         // object directly from the RestTemplate
-        ObjectMapper mapper = new ObjectMapper();
-
+        var mapper = new ObjectMapper();
         return mapper.readValue(resultJsonString, responseType);
     }
 
     private static String toAbsoluteDropboxPath(Path pathToTest) {
-        String pathAsString = pathToTest.toString();
+        var pathAsString = pathToTest.toString();
         return pathAsString.startsWith("/") ? pathAsString : String.format("/%s", pathAsString);
     }
 

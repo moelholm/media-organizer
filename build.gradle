@@ -13,7 +13,7 @@ plugins {
 
 group 'com.moelholm'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 
 compileJava.dependsOn spotlessCheck
 compileTestJava.dependsOn spotlessCheck

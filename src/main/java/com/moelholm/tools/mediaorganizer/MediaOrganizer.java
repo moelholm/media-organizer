@@ -41,11 +41,11 @@ public class MediaOrganizer {
             return;
         }
 
-        CronTrigger trigger = new CronTrigger(configuration.getScheduleAsCronExpression());
+        var trigger = new CronTrigger(configuration.getScheduleAsCronExpression());
         scheduler.schedule(() -> undoFlatMess(from, to), trigger);
 
         logger.info("Scheduled job that will move files from [{}] to [{}]", from, to);
-        Date nextExecutionTime = trigger.nextExecutionTime(new SimpleTriggerContext());
+        var nextExecutionTime = trigger.nextExecutionTime(new SimpleTriggerContext());
         logger.info("    - Job will start at [{}]", formatDateAsString(nextExecutionTime));
     }
 
@@ -73,11 +73,11 @@ public class MediaOrganizer {
                                     yearMonthDayString,
                                     mediaFilePathList.size());
 
-                            String destinationDirectoryName =
+                            var destinationDirectoryName =
                                     generateFinalDestinationDirectoryName(
                                             yearMonthDayString, mediaFilePathList);
 
-                            Path destinationDirectoryPath = to.resolve(destinationDirectoryName);
+                            var destinationDirectoryPath = to.resolve(destinationDirectoryName);
 
                             mediaFilePathList.stream()
                                     .forEach(
@@ -95,7 +95,7 @@ public class MediaOrganizer {
 
     private Predicate<? super Path> selectMediaFiles() {
         return path ->
-                configuration.getMediaFileExtensionsToMatch().stream() //
+                configuration.getMediaFileExtensionsToMatch().stream()
                         .anyMatch(
                                 fileExtension ->
                                         path.toString()
@@ -105,7 +105,7 @@ public class MediaOrganizer {
 
     private boolean hasInvalidParameters(Path from, Path to) {
 
-        boolean result = false;
+        var result = false;
 
         if (!fileSystem.existingDirectory(from)) {
             logger.info("Argument [from] is not an existing directory");
@@ -121,28 +121,28 @@ public class MediaOrganizer {
     }
 
     private String toYearMonthDayString(Path path) {
-        Date date = parseDateFromPathName(path);
+        var date = parseDateFromPathName(path);
 
         if (date == null) {
             return "unknown";
         }
 
-        Calendar dateCal = Calendar.getInstance();
+        var dateCal = Calendar.getInstance();
         dateCal.setTime(date);
 
-        int year = dateCal.get(Calendar.YEAR);
-        String month =
+        var year = dateCal.get(Calendar.YEAR);
+        var month =
                 new DateFormatSymbols(configuration.getLocale())
                         .getMonths()[dateCal.get(Calendar.MONTH)];
         month = Character.toUpperCase(month.charAt(0)) + month.substring(1);
-        int day = dateCal.get(Calendar.DAY_OF_MONTH);
+        var day = dateCal.get(Calendar.DAY_OF_MONTH);
 
         return String.format("%s - %s - %s", year, month, day);
     }
 
     private String generateFinalDestinationDirectoryName(
             String folderName, List<Path> mediaFilePaths) {
-        String lastPartOfFolderName = "( - \\d+)$";
+        var lastPartOfFolderName = "( - \\d+)$";
         String replaceWithNewLastPartOfFolderName;
         if (mediaFilePaths.size() >= configuration.getAmountOfMediaFilesIndicatingAnEvent()) {
             replaceWithNewLastPartOfFolderName =
@@ -158,7 +158,7 @@ public class MediaOrganizer {
     }
 
     private Date parseDateFromPathName(Path path) {
-        SimpleDateFormat sdf = new SimpleDateFormat(configuration.getMediaFilesDatePattern());
+        var sdf = new SimpleDateFormat(configuration.getMediaFilesDatePattern());
         try {
             return sdf.parse(path.getFileName().toString());
         } catch (ParseException e) {

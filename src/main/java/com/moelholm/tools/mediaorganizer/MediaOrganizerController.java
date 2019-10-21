@@ -30,9 +30,9 @@ public class MediaOrganizerController {
             return new ResponseEntity<String>(HttpStatus.UNAUTHORIZED);
         }
 
-        String fromDir = environment.getProperty(MainArgument.FROM_DIR.getArgumentName());
+        var fromDir = environment.getProperty(MainArgument.FROM_DIR.getArgumentName());
 
-        String toDir = environment.getProperty(MainArgument.TO_DIR.getArgumentName());
+        var toDir = environment.getProperty(MainArgument.TO_DIR.getArgumentName());
 
         organizer.asyncUndoFlatMess(Paths.get(fromDir), Paths.get(toDir));
 

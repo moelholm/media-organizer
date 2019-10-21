@@ -23,7 +23,7 @@ public class StartListener {
     @PostConstruct
     public void started() {
 
-        boolean startedWithMandatoryArguments =
+        var startedWithMandatoryArguments =
                 (environment.containsProperty(MainArgument.FROM_DIR.getArgumentName())
                         && environment.containsProperty(MainArgument.TO_DIR.getArgumentName()));
 
@@ -32,12 +32,12 @@ public class StartListener {
             return;
         }
 
-        String runMode = environment.getProperty(MainArgument.RUNMODE.getArgumentName());
-        FileSystemType fileSystemType =
+        var runMode = environment.getProperty(MainArgument.RUNMODE.getArgumentName());
+        var fileSystemType =
                 FileSystemType.fromString(
                         environment.getProperty(MainArgument.FILESYSTEM_TYPE.getArgumentName()));
-        String fromDir = environment.getProperty(MainArgument.FROM_DIR.getArgumentName());
-        String toDir = environment.getProperty(MainArgument.TO_DIR.getArgumentName());
+        var fromDir = environment.getProperty(MainArgument.FROM_DIR.getArgumentName());
+        var toDir = environment.getProperty(MainArgument.TO_DIR.getArgumentName());
 
         printApplicationStartedMessage(fromDir, toDir, runMode, fileSystemType);
 
