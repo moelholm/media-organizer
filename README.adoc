@@ -3,7 +3,7 @@ A tool for organizing photos and videos into my personal favorite layout.
 image:https://travis-ci.org/moelholm/media-organizer.svg?branch=master["Build Status", link="https://travis-ci.org/moelholm/media-organizer"]
 
 # Guide for developers
-Before you begin: Ensure that you have jdk 8 in the path.
+Before you begin: Ensure that you have jdk 11 in the path.
 
 ## Run the application
 `./gradlew bootRun -Drun.arguments="--fromDir=/path/to/source --toDir=/path/to/destination"`
@@ -13,7 +13,7 @@ You can also run the application with the `--daemon` flag. It will:
 - Schedule the organizing process to run according to whatever has been configured in `application.properties` (see the application sources for examples).  
  
 Do you want to try out the tool with Dropbox? Then:
-- Use the `--filesystemtype=dropbox` flag
+- Use the `--Dfilesystemtype=dropbox` flag
 - And set the System property `-Ddropbox.accessToken=[your-own-token]`.
 
 ( to use this feature you need to get your own token for your Dropbox account )
