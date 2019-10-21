@@ -12,12 +12,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.support.CronTrigger;
@@ -29,11 +30,20 @@ public class MediaOrganizer {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Autowired private MediaOrganizerConfiguration configuration;
+    private final MediaOrganizerConfiguration configuration;
 
-    @Autowired private TaskScheduler scheduler;
+    private final TaskScheduler scheduler;
 
-    @Autowired private FileSystem fileSystem;
+    private final FileSystem fileSystem;
+
+    public MediaOrganizer(
+            MediaOrganizerConfiguration configuration,
+            TaskScheduler scheduler,
+            FileSystem fileSystem) {
+        this.configuration = configuration;
+        this.scheduler = scheduler;
+        this.fileSystem = fileSystem;
+    }
 
     public void scheduleUndoFlatMess(Path from, Path to) {
 
@@ -64,60 +74,60 @@ public class MediaOrganizer {
 
         fileSystem
                 .streamOfAllFilesFromPath(from)
-                .filter(selectMediaFiles())
+                .filter(mediaFiles())
                 .collect(groupByYearMonthDayString())
-                .forEach(
-                        (yearMonthDayString, mediaFilePathList) -> {
-                            logger.info(
-                                    "Processing [{}] which has [{}] media files",
-                                    yearMonthDayString,
-                                    mediaFilePathList.size());
+                .forEach(processBatch(to));
+    }
 
-                            var destinationDirectoryName =
-                                    generateFinalDestinationDirectoryName(
-                                            yearMonthDayString, mediaFilePathList);
+    private BiConsumer<String, List<Path>> processBatch(Path to) {
+        return (yearMonthDayString, mediaFilePathList) -> {
+            logger.info(
+                    "Processing [{}] which has [{}] media files",
+                    yearMonthDayString,
+                    mediaFilePathList.size());
 
-                            var destinationDirectoryPath = to.resolve(destinationDirectoryName);
+            var destinationDirectoryName =
+                    generateFinalDestinationDirectoryName(yearMonthDayString, mediaFilePathList);
 
-                            mediaFilePathList.stream()
-                                    .forEach(
-                                            mediaFilePath ->
-                                                    move(
-                                                            mediaFilePath,
-                                                            destinationDirectoryPath.resolve(
-                                                                    mediaFilePath.getFileName())));
-                        });
+            var destinationDirectoryPath = to.resolve(destinationDirectoryName);
+
+            mediaFilePathList.forEach(processMediaFile(destinationDirectoryPath));
+        };
+    }
+
+    private Consumer<Path> processMediaFile(Path destinationDirectoryPath) {
+        return mediaFilePath ->
+                move(mediaFilePath, destinationDirectoryPath.resolve(mediaFilePath.getFileName()));
     }
 
     private Collector<Path, ?, Map<String, List<Path>>> groupByYearMonthDayString() {
         return Collectors.groupingBy(this::toYearMonthDayString);
     }
 
-    private Predicate<? super Path> selectMediaFiles() {
+    private Predicate<? super Path> mediaFiles() {
         return path ->
                 configuration.getMediaFileExtensionsToMatch().stream()
-                        .anyMatch(
-                                fileExtension ->
-                                        path.toString()
-                                                .toLowerCase()
-                                                .endsWith(String.format(".%s", fileExtension)));
+                        .anyMatch(extensionMatches(path));
+    }
+
+    private Predicate<String> extensionMatches(Path path) {
+        return fileExtension ->
+                path.toString().toLowerCase().endsWith(String.format(".%s", fileExtension));
     }
 
     private boolean hasInvalidParameters(Path from, Path to) {
 
-        var result = false;
-
         if (!fileSystem.existingDirectory(from)) {
             logger.info("Argument [from] is not an existing directory");
-            result = true;
+            return true;
         }
 
         if (!fileSystem.existingDirectory(to)) {
             logger.info("Argument [to] is not an existing directory");
-            result = true;
+            return true;
         }
 
-        return result;
+        return false;
     }
 
     private String toYearMonthDayString(Path path) {

@@ -1,5 +1,7 @@
 package com.moelholm.tools.mediaorganizer.filesystem;
 
+import static java.util.Collections.singletonList;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,13 +9,14 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,10 +29,10 @@ public class DropboxFileSystem implements FileSystem {
     public boolean existingDirectory(Path pathToTest) {
         try {
             var dropboxPathToTest = toAbsoluteDropboxPath(pathToTest);
-            var dropBoxRequest = new DropboxFileRequest(dropboxPathToTest);
+            var dropboxRequest = new DropboxFileRequest(dropboxPathToTest);
             var metaData =
                     postToDropboxAndGetResponse(
-                            "/files/get_metadata", dropBoxRequest, DropboxFile.class);
+                            "/files/get_metadata", dropboxRequest, DropboxFile.class);
             return metaData.isDirectory();
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.CONFLICT) { // -(file-does-not-exist)-
@@ -49,8 +52,8 @@ public class DropboxFileSystem implements FileSystem {
             var listFolderResponse =
                     postToDropboxAndGetResponse(
                             "/files/list_folder", dropBoxRequest, DropboxListFolderResponse.class);
-            return listFolderResponse.getDropboxFiles().stream() //
-                    .map(DropboxFile::getPathLower) //
+            return listFolderResponse.getDropboxFiles().stream()
+                    .map(DropboxFile::getPathLower)
                     .map(Paths::get);
         } catch (HttpClientErrorException e) {
             throw asRuntimeException(e);
@@ -78,43 +81,32 @@ public class DropboxFileSystem implements FileSystem {
 
     private RuntimeException asRuntimeException(HttpClientErrorException e) {
         return new RuntimeException(
-                String.format("%s [%s]", e.getMessage(), e.getResponseBodyAsString()), e);
+                String.format("%s [A%s]", e.getMessage(), e.getResponseBodyAsString()), e);
     }
 
     private RestTemplate createRestTemplate() {
-        var restTemplate = new RestTemplate();
-        restTemplate.setInterceptors(
-                Collections.singletonList(
-                        (request, bytes, execution) -> {
-                            request.getHeaders()
-                                    .put(
-                                            "Authorization",
-                                            Collections.singletonList(
-                                                    String.format(
-                                                            "Bearer %s", dropboxAccessToken)));
-                            request.getHeaders()
-                                    .put(
-                                            "Content-Type",
-                                            Collections.singletonList("application/json"));
-                            return execution.execute(request, bytes);
-                        }));
-        return restTemplate;
+        return new RestTemplateBuilder().interceptors(createHeadersInterceptor()).build();
+    }
+
+    private ClientHttpRequestInterceptor createHeadersInterceptor() {
+        return (request, bytes, execution) -> {
+            request.getHeaders()
+                    .put(
+                            "Authorization",
+                            singletonList(String.format("Bearer %s", dropboxAccessToken)));
+            request.getHeaders().put("Content-Type", singletonList("application/json"));
+            return execution.execute(request, bytes);
+        };
     }
 
     private <T> T postToDropboxAndGetResponse(String path, Object arg, Class<T> responseType)
             throws IOException {
 
-        var resultJsonString =
-                createRestTemplate()
-                        .postForObject(
-                                String.format("https://api.dropboxapi.com/2%s", path),
-                                arg,
-                                String.class);
+        var url = String.format("https://api.dropboxapi.com/2%s", path);
+        var resultJsonString = createRestTemplate().postForObject(url, arg, String.class);
 
         // Note (!) : this is a workaround for an ...ahem temporary issue... with
-        // getting the Java
-        // POJO
-        // object directly from the RestTemplate
+        // getting the Java POJO object directly from the RestTemplate
         var mapper = new ObjectMapper();
         return mapper.readValue(resultJsonString, responseType);
     }

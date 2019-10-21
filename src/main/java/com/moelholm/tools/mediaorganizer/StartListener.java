@@ -5,7 +5,6 @@ import java.nio.file.Paths;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -16,9 +15,14 @@ public class StartListener {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Autowired private Environment environment;
+    private final Environment environment;
 
-    @Autowired private MediaOrganizer organizer;
+    private final MediaOrganizer organizer;
+
+    public StartListener(Environment environment, MediaOrganizer organizer) {
+        this.environment = environment;
+        this.organizer = organizer;
+    }
 
     @PostConstruct
     public void started() {
