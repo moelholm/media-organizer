@@ -13,8 +13,8 @@ You can also run the application with the `--daemon` flag. It will:
 - Schedule the organizing process to run according to whatever has been configured in `application.properties` (see the application sources for examples).  
  
 Do you want to try out the tool with Dropbox? Then:
-- Use the `--Dfilesystemtype=dropbox` flag
-- And set the System property `-Ddropbox.accessToken=[your-own-token]`.
+- Use the `--filesystemtype=dropbox` flag
+- And set the System property `-dropbox.accessToken=[your-own-token]`.
 
 ( to use this feature you need to get your own token for your Dropbox account )
  
