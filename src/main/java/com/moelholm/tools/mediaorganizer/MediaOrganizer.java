@@ -4,7 +4,6 @@ import com.moelholm.tools.mediaorganizer.filesystem.FileSystem;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
-import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -19,10 +18,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.support.CronTrigger;
-import org.springframework.scheduling.support.SimpleTriggerContext;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -30,33 +26,13 @@ public class MediaOrganizer {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final MediaOrganizerConfiguration configuration;
-
-    private final TaskScheduler scheduler;
+    private final Configuration configuration;
 
     private final FileSystem fileSystem;
 
-    public MediaOrganizer(
-            MediaOrganizerConfiguration configuration,
-            TaskScheduler scheduler,
-            FileSystem fileSystem) {
+    public MediaOrganizer(Configuration configuration, FileSystem fileSystem) {
         this.configuration = configuration;
-        this.scheduler = scheduler;
         this.fileSystem = fileSystem;
-    }
-
-    public void scheduleUndoFlatMess(Path from, Path to) {
-
-        if (hasInvalidParameters(from, to)) {
-            return;
-        }
-
-        var trigger = new CronTrigger(configuration.getScheduleAsCronExpression());
-        scheduler.schedule(() -> undoFlatMess(from, to), trigger);
-
-        logger.info("Scheduled job that will move files from [{}] to [{}]", from, to);
-        var nextExecutionTime = trigger.nextExecutionTime(new SimpleTriggerContext());
-        logger.info("    - Job will start at [{}]", formatDateAsString(nextExecutionTime));
     }
 
     @Async
@@ -175,10 +151,6 @@ public class MediaOrganizer {
             logger.warn("Failed to extract date from {} (Cause says: {})", path, e.getMessage());
             return null;
         }
-    }
-
-    private String formatDateAsString(Date date) {
-        return DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL).format(date);
     }
 
     private void move(Path fileToMove, Path pathThatFileShouldBeMovedTo) {

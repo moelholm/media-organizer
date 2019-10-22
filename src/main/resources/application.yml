@@ -4,13 +4,6 @@
 #
 spring.profiles.active: production
 
-daemon:
-  #
-  # When the application is started as a daemon (with the --daemon flag), at what
-  # schedule should it then process the media files? (provide a valid CRON expression).
-  #
-  scheduleAsCronExpression: 0 45 23 ? * *
-
 mediafiles:
   #
   # What is the expected date pattern in the photo- and video filenames?

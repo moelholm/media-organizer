@@ -1,7 +1,6 @@
 package com.moelholm.tools.mediaorganizer;
 
 public enum MainArgument {
-    RUNMODE("runMode"),
     FILESYSTEM_TYPE("fileSystemType"),
     FROM_DIR("fromDir"),
     TO_DIR("toDir");

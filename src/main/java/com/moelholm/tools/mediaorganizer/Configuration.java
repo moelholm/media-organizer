@@ -7,10 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MediaOrganizerConfiguration {
-
-    @Value("${daemon.scheduleAsCronExpression}")
-    private String scheduleAsCronExpression;
+public class Configuration {
 
     @Value("${mediafiles.datepattern}")
     private String mediaFilesDatePattern;
@@ -30,31 +27,27 @@ public class MediaOrganizerConfiguration {
     @Value("${destination.suffixForDestinationFolderOfMiscMediaFiles}")
     private String suffixForDestinationFolderOfMiscMediaFiles;
 
-    public String getMediaFilesDatePattern() {
+    String getMediaFilesDatePattern() {
         return mediaFilesDatePattern;
     }
 
-    public List<String> getMediaFileExtensionsToMatch() {
+    List<String> getMediaFileExtensionsToMatch() {
         return Arrays.asList(mediaFileExtensionsToMatch);
     }
 
-    public int getAmountOfMediaFilesIndicatingAnEvent() {
+    int getAmountOfMediaFilesIndicatingAnEvent() {
         return amountOfMediaFilesIndicatingAnEvent;
     }
 
-    public Locale getLocale() {
+    Locale getLocale() {
         return locale;
     }
 
-    public String getSuffixForDestinationFolderOfUnknownEventMediaFiles() {
+    String getSuffixForDestinationFolderOfUnknownEventMediaFiles() {
         return suffixForDestinationFolderOfUnknownEventMediaFiles;
     }
 
-    public String getSuffixForDestinationFolderOfMiscMediaFiles() {
+    String getSuffixForDestinationFolderOfMiscMediaFiles() {
         return suffixForDestinationFolderOfMiscMediaFiles;
-    }
-
-    public String getScheduleAsCronExpression() {
-        return scheduleAsCronExpression;
     }
 }
