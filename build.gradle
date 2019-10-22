@@ -43,3 +43,16 @@ spotless {
     googleJavaFormat('1.7').aosp()
   }
 }
+
+task triggerJob {
+    doLast {
+        if (System.getenv('web.apiKey') != null && System.getenv('web.url') != null) {
+            print "Running media organizer"
+            System.getenv("web.url")
+                    .toURL()
+                    .getText(requestProperties: [Authorization: System.getenv('web.apiKey')])
+        } else {
+            logger.error "Did not find apiKey and/or url in environment variables!"
+        }
+    }
+}
