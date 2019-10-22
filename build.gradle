@@ -46,11 +46,11 @@ spotless {
 
 task triggerJob {
     doLast {
-        if (System.getenv('web.apiKey') != null && System.getenv('web.url') != null) {
+        if (System.getenv('WEB_APIKEY') != null && System.getenv('WEB_URL') != null) {
             print "Running media organizer"
-            System.getenv("web.url")
+            System.getenv("WEB_URL")
                     .toURL()
-                    .getText(requestProperties: [Authorization: System.getenv('web.apiKey')])
+                    .getText(requestProperties: [Authorization: System.getenv('WEB_APIKEY')])
         } else {
             logger.error "Did not find apiKey and/or url in environment variables!"
         }
