@@ -8,10 +8,6 @@ Before you begin: Ensure that you have jdk 11 in the path.
 ## Run the application
 `./gradlew bootRun -Drun.arguments="--fromDir=/path/to/source --toDir=/path/to/destination"`
 
-You can also run the application with the `--daemon` flag. It will:
-- Start the application as a daemon (running until explicitly closed)
-- Schedule the organizing process to run according to whatever has been configured in `application.properties` (see the application sources for examples).  
- 
 Do you want to try out the tool with Dropbox? Then:
 - Use the `--filesystemtype=dropbox` flag
 - And set the System property `-dropbox.accessToken=[your-own-token]`.
