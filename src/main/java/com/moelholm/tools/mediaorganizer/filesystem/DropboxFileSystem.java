@@ -129,18 +129,12 @@ public class DropboxFileSystem implements FileSystem {
 
         private String path;
 
-        private int limit = 100;
-
         public DropboxFileRequest(String path) {
             this.path = path;
         }
 
         public String getPath() {
             return path;
-        }
-
-        public int getLimit() {
-            return limit;
         }
     }
 
