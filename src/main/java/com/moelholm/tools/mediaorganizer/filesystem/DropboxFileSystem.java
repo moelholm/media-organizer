@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,14 +48,22 @@ public class DropboxFileSystem implements FileSystem {
     @Override
     public Stream<Path> streamOfAllFilesFromPath(Path from) {
         try {
-            var dropboxPathToTest = toAbsoluteDropboxPath(from);
-            var dropBoxRequest = new DropboxFileRequest(dropboxPathToTest);
+            var dropboxPath = toAbsoluteDropboxPath(from);
             var listFolderResponse =
                     postToDropboxAndGetResponse(
-                            "/files/list_folder", dropBoxRequest, DropboxListFolderResponse.class);
-            return listFolderResponse.getDropboxFiles().stream()
-                    .map(DropboxFile::getPathLower)
-                    .map(Paths::get);
+                            "/files/list_folder",
+                            new DropboxFileRequest(dropboxPath),
+                            DropboxListFolderResponse.class);
+            var allFiles = new ArrayList<DropboxFile>(listFolderResponse.getDropboxFiles());
+            while (listFolderResponse.hasMore()) {
+                listFolderResponse =
+                        postToDropboxAndGetResponse(
+                                "/files/list_folder/continue",
+                                new DropboxCursorRequest(listFolderResponse.getCursor()),
+                                DropboxListFolderResponse.class);
+                allFiles.addAll(listFolderResponse.getDropboxFiles());
+            }
+            return allFiles.stream().map(DropboxFile::getPathLower).map(Paths::get);
         } catch (HttpClientErrorException e) {
             throw asRuntimeException(e);
         } catch (Exception e) {
@@ -120,12 +129,31 @@ public class DropboxFileSystem implements FileSystem {
 
         private String path;
 
+        private int limit = 100;
+
         public DropboxFileRequest(String path) {
             this.path = path;
         }
 
         public String getPath() {
             return path;
+        }
+
+        public int getLimit() {
+            return limit;
+        }
+    }
+
+    public static class DropboxCursorRequest {
+
+        private String cursor;
+
+        public DropboxCursorRequest(String cursor) {
+            this.cursor = cursor;
+        }
+
+        public String getCursor() {
+            return cursor;
         }
     }
 
@@ -157,6 +185,12 @@ public class DropboxFileSystem implements FileSystem {
         @JsonProperty("entries")
         private List<DropboxFile> dropboxFiles;
 
+        @JsonProperty("has_more")
+        private boolean more;
+
+        @JsonProperty("cursor")
+        private String cursor;
+
         @Override
         public String toString() {
             return dropboxFiles.stream()
@@ -166,6 +200,14 @@ public class DropboxFileSystem implements FileSystem {
 
         public List<DropboxFile> getDropboxFiles() {
             return dropboxFiles;
+        }
+
+        public boolean hasMore() {
+            return more;
+        }
+
+        public String getCursor() {
+            return cursor;
         }
     }
 
