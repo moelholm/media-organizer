@@ -1,15 +1,5 @@
 package com.moelholm.tools.mediaorganizer;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,14 +8,28 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ActiveProfiles(profiles = "test")
+@TestPropertySource(properties = {
+        "destination.suffixForDestinationFolderOfUnknownEventMediaFiles=This Must Be An Event",
+        "destination.suffixForDestinationFolderOfMiscMediaFiles=Misc",
+        "destination.localeForGeneratingDestinationFolderNames=en_UK"
+})
 @SpringBootTest
 public class MediaOrganizerIntegrationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(MediaOrganizerIntegrationTest.class);
 
-    @Autowired private MediaOrganizer organizer; // S.U.T.
+    @Autowired
+    private MediaOrganizer organizer; // S.U.T.
 
     private Path from;
 
@@ -50,7 +54,7 @@ public class MediaOrganizerIntegrationTest {
 
     @Test
     public void
-            undoFlatMess_whenProcessingMediaFilesWithUnparseableDates_thenMovesThemToUnknownFolder() {
+    undoFlatMess_whenProcessingMediaFilesWithUnparseableDates_thenMovesThemToUnknownFolder() {
 
         // Given
         addFileToDirectoryPath(from, "i_dont_have_a_sane_date_in_my_filename.jpg");
