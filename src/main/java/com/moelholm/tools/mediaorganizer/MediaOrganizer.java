@@ -48,11 +48,25 @@ public class MediaOrganizer {
 
         logger.info("Moving files from [{}] to [{}]", from, to);
 
-        fileSystem
+        var groupedMediaFiles = fileSystem
                 .streamOfAllFilesFromPath(from)
                 .filter(mediaFiles())
-                .collect(groupByYearMonthDayString())
-                .forEach(processBatch(to));
+                .sorted()
+                .collect(groupByYearMonthDayString());
+
+        logStatistics(groupedMediaFiles);
+
+        groupedMediaFiles.forEach(processBatch(to));
+    }
+
+    private void logStatistics(Map<String, List<Path>> groupedMediaFiles) {
+        logger.info("Found [{}] media files in total", groupedMediaFiles.values().stream()
+                .mapToInt(List::size)
+                .sum());
+        groupedMediaFiles.forEach((yearMonthDayString, mediaFilePathList) -> logger.info(
+                "    [{}] has [{}] media files",
+                yearMonthDayString,
+                mediaFilePathList.size()));
     }
 
     private BiConsumer<String, List<Path>> processBatch(Path to) {
