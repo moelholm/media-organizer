@@ -14,17 +14,25 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+@Component
+@ConditionalOnProperty(name = "mediaorganizer.fileSystemType", havingValue = "dropbox")
 public class DropboxFileSystem implements FileSystem {
 
-    @Value("${dropbox.accessToken}")
-    private String dropboxAccessToken;
+    private final DropboxFileSystemProperties dropboxAccessToken;
+
+    public DropboxFileSystem(DropboxFileSystemProperties dropboxAccessToken) {
+        this.dropboxAccessToken = dropboxAccessToken;
+    }
 
     @Override
     public boolean existingDirectory(Path pathToTest) {
@@ -102,7 +110,7 @@ public class DropboxFileSystem implements FileSystem {
             request.getHeaders()
                     .put(
                             "Authorization",
-                            singletonList(String.format("Bearer %s", dropboxAccessToken)));
+                            singletonList(String.format("Bearer %s", dropboxAccessToken.getAccessToken())));
             request.getHeaders().put("Content-Type", singletonList("application/json"));
             return execution.execute(request, bytes);
         };

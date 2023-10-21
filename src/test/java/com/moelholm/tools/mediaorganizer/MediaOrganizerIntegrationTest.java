@@ -1,14 +1,19 @@
 package com.moelholm.tools.mediaorganizer;
 
+import com.moelholm.tools.mediaorganizer.filesystem.LocalFileSystem;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -19,9 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ActiveProfiles(profiles = "test")
 @TestPropertySource(properties = {
-        "destination.suffixForDestinationFolderOfUnknownEventMediaFiles=This Must Be An Event",
-        "destination.suffixForDestinationFolderOfMiscMediaFiles=Misc",
-        "destination.localeForGeneratingDestinationFolderNames=en_UK"
+        "mediaorganizer.fileSystemType=local",
+        "mediaorganizer.source.fromDir=target/testground-from",
+        "mediaorganizer.destination.suffixForDestinationFolderOfUnknownEventMediaFiles=This Must Be An Event",
+        "mediaorganizer.destination.suffixForDestinationFolderOfMiscMediaFiles=Misc",
+        "mediaorganizer.destination.localeForGeneratingDestinationFolderNames=en_UK",
+        "mediaorganizer.destination.toDir=target/testground-to",
 })
 @SpringBootTest
 public class MediaOrganizerIntegrationTest {
@@ -43,7 +51,7 @@ public class MediaOrganizerIntegrationTest {
         addFileToDirectoryPath(from, "story.pdf");
 
         // When
-        organizer.undoFlatMess(from, to);
+        organizer.undoFlatMess();
 
         // Then
         assertPathExistsInDirectory(from, "README.md");
@@ -60,7 +68,7 @@ public class MediaOrganizerIntegrationTest {
         addFileToDirectoryPath(from, "i_dont_have_a_sane_date_in_my_filename.jpg");
 
         // When
-        organizer.undoFlatMess(from, to);
+        organizer.undoFlatMess();
 
         // Then
         assertPathExistsInDirectory(to, "unknown", "i_dont_have_a_sane_date_in_my_filename.jpg");
@@ -79,7 +87,7 @@ public class MediaOrganizerIntegrationTest {
         }
 
         // When
-        organizer.undoFlatMess(from, to);
+        organizer.undoFlatMess();
 
         // Then
         assertPathExistsInDirectory(to, "2015 - January - Misc", "2015-01-13 03.13.53.jpg");

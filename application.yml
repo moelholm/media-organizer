@@ -1,9 +1,0 @@
-# Overrides selected configuration for use in Denmark
-#
-# ( see src/main/resources/application.yml for default values )
-#
-#
-destination:
-  suffixForDestinationFolderOfMiscMediaFiles: Blandet
-  suffixForDestinationFolderOfUnknownEventMediaFiles: Ukendt Haendelse
-  localeForGeneratingDestinationFolderNames: da

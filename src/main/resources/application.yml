@@ -2,20 +2,37 @@
 # Default configuration file.
 #
 #
-spring.profiles.active: production
+#spring.profiles.active: production
 
-mediafiles:
+#
+# What kind of source do you want to organize?
+# Valid values: local, dropbox
+#
+mediaorganizer.fileSystemType: local
+
+mediaorganizer.mediafiles:
   #
   # What is the expected date pattern in the photo- and video filenames?
   # ( EXIF data is not used as datetime source )
   #
-  datepattern: yyyy-MM-dd HH.mm.ss
+  datePattern: yyyy-MM-dd HH.mm.ss
   #
   # What kind of media files would you like to be organized?
   #
-  mediaFileExtensionsToMatch: jpg,mov
+  extensionsToMatch: jpg,mov
 
-destination:
+# source:
+  #
+  # Where are the media files located?
+  #
+  # fromDir: /Users/username/Pictures/2018
+
+mediaorganizer.destination:
+  #
+  # Where should the organized media files be placed?
+  #
+  # toDir:
+
   #
   # How many photos/videos should appear within a day before we consider them an actual event?
   # (inclusive value)

@@ -1,6 +1,10 @@
 package com.moelholm.tools.mediaorganizer;
 
 import com.moelholm.tools.mediaorganizer.filesystem.FileSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
@@ -16,35 +20,25 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 
 @Component
 public class MediaOrganizer {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Configuration configuration;
+    private final AppProperties appProperties;
 
     private final FileSystem fileSystem;
 
-    public MediaOrganizer(Configuration configuration, FileSystem fileSystem) {
-        this.configuration = configuration;
+    public MediaOrganizer(AppProperties appProperties, FileSystem fileSystem) {
+        this.appProperties = appProperties;
         this.fileSystem = fileSystem;
+     //   assertValidDirs(appProperties.getFromDir(), appProperties.getToDir());
     }
 
-    @Async
-    public void asyncUndoFlatMess(Path from, Path to) {
-        undoFlatMess(from, to);
-    }
-
-    public void undoFlatMess(Path from, Path to) {
-
-        if (hasInvalidParameters(from, to)) {
-            return;
-        }
+    public void undoFlatMess() {
+        var from = appProperties.getSourceFromDir();
+        var to = appProperties.getToDir();
 
         logger.info("Moving files from [{}] to [{}]", from, to);
 
@@ -57,6 +51,15 @@ public class MediaOrganizer {
         logStatistics(groupedMediaFiles);
 
         groupedMediaFiles.forEach(processBatch(to));
+    }
+
+    private void assertValidDirs(Path from, Path to) {
+        if (hasInvalidParameters(from, to)) {
+            throw new IllegalStateException(
+                    String.format(
+                            "Invalid parameters: from=[%s], to=[%s]",
+                            from.toAbsolutePath(), to.toAbsolutePath()));
+        }
     }
 
     private void logStatistics(Map<String, List<Path>> groupedMediaFiles) {
@@ -96,7 +99,7 @@ public class MediaOrganizer {
 
     private Predicate<? super Path> mediaFiles() {
         return path ->
-                configuration.getMediaFileExtensionsToMatch().stream()
+                appProperties.getMediaFileExtensionsToMatch().stream()
                         .anyMatch(extensionMatches(path));
     }
 
@@ -132,7 +135,7 @@ public class MediaOrganizer {
 
         var year = dateCal.get(Calendar.YEAR);
         var month =
-                new DateFormatSymbols(configuration.getLocale())
+                new DateFormatSymbols(appProperties.getLocale())
                         .getMonths()[dateCal.get(Calendar.MONTH)];
         month = Character.toUpperCase(month.charAt(0)) + month.substring(1);
         var day = dateCal.get(Calendar.DAY_OF_MONTH);
@@ -144,21 +147,21 @@ public class MediaOrganizer {
             String folderName, List<Path> mediaFilePaths) {
         var lastPartOfFolderName = "( - \\d+)$";
         String replaceWithNewLastPartOfFolderName;
-        if (mediaFilePaths.size() >= configuration.getAmountOfMediaFilesIndicatingAnEvent()) {
+        if (mediaFilePaths.size() >= appProperties.getAmountOfMediaFilesIndicatingAnEvent()) {
             replaceWithNewLastPartOfFolderName =
                     String.format(
                             "$1 - %s",
-                            configuration.getSuffixForDestinationFolderOfUnknownEventMediaFiles());
+                            appProperties.getSuffixForDestinationFolderOfUnknownEventMediaFiles());
         } else {
             replaceWithNewLastPartOfFolderName =
                     String.format(
-                            " - %s", configuration.getSuffixForDestinationFolderOfMiscMediaFiles());
+                            " - %s", appProperties.getSuffixForDestinationFolderOfMiscMediaFiles());
         }
         return folderName.replaceAll(lastPartOfFolderName, replaceWithNewLastPartOfFolderName);
     }
 
     private Date parseDateFromPathName(Path path) {
-        var sdf = new SimpleDateFormat(configuration.getMediaFilesDatePattern());
+        var sdf = new SimpleDateFormat(appProperties.getMediafilesDatePattern());
         try {
             return sdf.parse(path.getFileName().toString());
         } catch (ParseException e) {

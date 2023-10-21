@@ -8,3 +8,4 @@ build
 .vscode/
 bin/
 http-client.private.env.json
+target/

@@ -1,10 +1,15 @@
 package com.moelholm.tools.mediaorganizer.filesystem;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+@Component
+@ConditionalOnProperty(name = "mediaorganizer.fileSystemType", havingValue = "local")
 public class LocalFileSystem implements FileSystem {
 
     @Override
