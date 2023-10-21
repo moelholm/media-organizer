@@ -27,6 +27,8 @@ Do you want to try out the tool with Dropbox? Then set properties: `mediaorganiz
 Do you want to try out the tool with support for loading properties from AWS SSM Parameter store? Then set property:
 `aws.paramstore.enabled=true` (enables the code to load properties from AWS SSM Parameter store) and the following
 AWS SDK specific environment variables `AWS_ACCESS_KEY_ID=secret`, `AWS_SECRET_KEY=secret` `AWS_SESSION_TOKEN=secret`.
+Now you can set properties in AWS SSM Parameter store from `/APPLICATION/MEDIA-ORGANIZER/*` and the application will
+load them (consider to put the Dropbox access token in AWS SSM Parameter store as an encrypted variable for example).
  
 ## Test
 `mvn test`
