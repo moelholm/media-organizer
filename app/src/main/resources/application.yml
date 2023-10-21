@@ -19,7 +19,7 @@ mediaorganizer.mediafiles:
   #
   # What kind of media files would you like to be organized?
   #
-  extensionsToMatch: jpg,mov
+  extensionsToMatch: jpg,mov,heic
 
 # source:
   #
