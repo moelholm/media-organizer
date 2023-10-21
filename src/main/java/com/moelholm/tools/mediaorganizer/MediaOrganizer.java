@@ -33,14 +33,14 @@ public class MediaOrganizer {
     public MediaOrganizer(AppProperties appProperties, FileSystem fileSystem) {
         this.appProperties = appProperties;
         this.fileSystem = fileSystem;
-     //   assertValidDirs(appProperties.getFromDir(), appProperties.getToDir());
     }
 
     public void undoFlatMess() {
-        var from = appProperties.getSourceFromDir();
+        var from = appProperties.getFromDir();
         var to = appProperties.getToDir();
 
         logger.info("Moving files from [{}] to [{}]", from, to);
+        assertValidDirs(from, to);
 
         var groupedMediaFiles = fileSystem
                 .streamOfAllFilesFromPath(from)

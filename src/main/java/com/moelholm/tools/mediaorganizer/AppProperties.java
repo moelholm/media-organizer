@@ -60,7 +60,7 @@ public class AppProperties {
         this.source = source;
     }
 
-    public Path getSourceFromDir() {
+    public Path getFromDir() {
         return Path.of(getSource().getFromDir());
     }
 
