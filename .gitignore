@@ -1,11 +1,9 @@
 build
 .idea
-.gradle
 *.iml
-.classpath
-.project
 .settings/
 .vscode/
 bin/
 http-client.private.env.json
 target/
+.DS_Store
