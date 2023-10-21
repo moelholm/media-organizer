@@ -22,7 +22,11 @@ Create a properties file with the following content:
 Then run the application with the following command
     mvn spring-boot:run
 
-Do you want to try out the tool with Dropbox? Then set properties: `mediaorganizer.fileSystemType=dropbox` and `dropbox.accessToken=[your-own-token]`. To use this feature you need to get your own token for your Dropbox account
+Do you want to try out the tool with Dropbox? Then set properties: `mediaorganizer.fileSystemType=dropbox` and `dropbox.accessToken=[your-own-token]`. To use this feature you need to get your own token for your Dropbox account.
+
+Do you want to try out the tool with support for loading properties from AWS SSM Parameter store? Then set property:
+`aws.paramstore.enabled=true` (enables the code to load properties from AWS SSM Parameter store) and the following
+AWS SDK specific environment variables `AWS_ACCESS_KEY_ID=secret`, `AWS_SECRET_KEY=secret` `AWS_SESSION_TOKEN=secret`.
  
 ## Test
 `mvn test`
