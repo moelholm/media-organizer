@@ -9,7 +9,7 @@ Create a properties file with the following content:
     #
     # Mandatory properties (otherwise the application will not start)
     #
-    mediaorganizer.fileSystemType=dropbox
+    mediaorganizer.fileSystemType=local
     mediaorganizer.source.fromDir=/test_media_organizer/input
     mediaorganizer.destination.toDir=/test_media_organizer/output
     #
@@ -22,10 +22,7 @@ Create a properties file with the following content:
 Then run the application with the following command
     mvn spring-boot:run
 
-Do you want to try out the tool with Dropbox? Then:
-- Set property `dropbox.accessToken=[your-own-token]`.
-
-( to use this feature you need to get your own token for your Dropbox account )
+Do you want to try out the tool with Dropbox? Then set properties: `mediaorganizer.fileSystemType=dropbox` and `dropbox.accessToken=[your-own-token]`. To use this feature you need to get your own token for your Dropbox account
  
 ## Test
 `mvn test`
