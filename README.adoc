@@ -10,6 +10,7 @@ Create a properties file with the following content:
     mediaorganizer.fileSystemType=dropbox
     mediaorganizer.source.fromDir=/test_media_organizer/input
     mediaorganizer.destination.toDir=/test_media_organizer/output
+
     # Optional properties
     mediaorganizer.destination.localeForGeneratingDestinationFolderNames=da
     mediaorganizer.destination.suffixForDestinationFolderOfMiscMediaFiles=Blandet
