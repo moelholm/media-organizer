@@ -1,9 +1,9 @@
 A tool for organizing photos and videos into my personal favorite layout.
 
-# Guide for developers
+= Guide for developers
 Before you begin: Ensure that you have jdk 17 and mvn 3.x.x.
 
-## Run the application
+== Run the application
 Create a properties file with the following content:
 
     #
@@ -13,11 +13,13 @@ Create a properties file with the following content:
     mediaorganizer.source.fromDir=/test_media_organizer/input
     mediaorganizer.destination.toDir=/test_media_organizer/output
     #
-    # Optional properties
+    # Optional properties (here configuring the application to use Danish locale and texts)
     #
     mediaorganizer.destination.localeForGeneratingDestinationFolderNames=da
     mediaorganizer.destination.suffixForDestinationFolderOfMiscMediaFiles=Blandet
     mediaorganizer.destination.suffixForDestinationFolderOfUnknownEventMediaFiles=Ukendt Haendelse
+
+See link:app/src/main/resources/application.yml[] for more properties that you can override (for example supported media files etc).
 
 Then run the application with the following command
     mvn spring-boot:run
@@ -29,12 +31,12 @@ Do you want to try out the tool with support for loading properties from AWS SSM
 AWS SDK specific environment variables `AWS_ACCESS_KEY_ID=secret`, `AWS_SECRET_KEY=secret` `AWS_SESSION_TOKEN=secret`.
 Now you can set properties in AWS SSM Parameter store under `/APPLICATION/MEDIA-ORGANIZER/*` and the application will
 load them (consider to put the Dropbox access token in AWS SSM Parameter store as an encrypted value for example).
- 
-## Test
+
+== Test
 `mvn test`
 ( Runs all unit tests and integration tests )
 
-## Build distribution
+== Build distribution
 `mvn install`
   
 
