@@ -38,5 +38,20 @@ load them (consider to put the Dropbox access token in AWS SSM Parameter store a
 
 == Build distribution
 `mvn install`
+
+== Run production distribution
+All examples are meant to be run from a POSIX terminal positioned at the link:app[] directory.
+
+Also note: the application is run with _overriding_ properties from properties file `etc/application-production.properties`. That
+file enables AWS SSM Parameter store and loads properties from there. Therefore you must have exported the AWS SDK specific environment variables
+mentioned above.
+
+Maven:
+
+    mvn spring-boot:run -Dspring-boot.run.arguments="--spring.config.location=classpath:/,etc/application-production.properties"
+
+JRE:
+
+    java -jar target/media-organizer-0.0.1-SNAPSHOT.jar --spring.config.location="classpath:/,etc/application-production.properties
   
 
