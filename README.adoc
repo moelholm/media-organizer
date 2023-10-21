@@ -1,25 +1,33 @@
 A tool for organizing photos and videos into my personal favorite layout.
 
-image:https://travis-ci.org/moelholm/media-organizer.svg?branch=master["Build Status", link="https://travis-ci.org/moelholm/media-organizer"]
-
 # Guide for developers
-Before you begin: Ensure that you have jdk 11 in the path.
+Before you begin: Ensure that you have jdk 17 and mvn 3.x.x.
 
 ## Run the application
-`./gradlew bootRun -Drun.arguments="--fromDir=/path/to/source --toDir=/path/to/destination"`
+Create a properties file with the following content:
+
+    # Mandatory properties (otherwise the application will not start)
+    mediaorganizer.fileSystemType=dropbox
+    mediaorganizer.source.fromDir=/test_media_organizer/input
+    mediaorganizer.destination.toDir=/test_media_organizer/output
+    # Optional properties
+    mediaorganizer.destination.localeForGeneratingDestinationFolderNames=da
+    mediaorganizer.destination.suffixForDestinationFolderOfMiscMediaFiles=Blandet
+    mediaorganizer.destination.suffixForDestinationFolderOfUnknownEventMediaFiles=Ukendt Haendelse
+
+Then run the application with the following command
+    mvn spring-boot:run
 
 Do you want to try out the tool with Dropbox? Then:
-- Use the `--filesystemtype=dropbox` flag
-- And set the System property `-dropbox.accessToken=[your-own-token]`.
+- Set property `dropbox.accessToken=[your-own-token]`.
 
 ( to use this feature you need to get your own token for your Dropbox account )
  
 ## Test
-`./gradlew test`
+`mvn test`
 ( Runs all unit tests and integration tests )
 
 ## Build distribution
-`./gradlew assemble`
-( Find a fat JAR in the target folder )
+`mvn install`
   
 
