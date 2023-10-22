@@ -6,12 +6,12 @@ import com.moelholm.tools.mediaorganizer.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AwsLambdaHandler implements RequestHandler<String, String> {
+public class AwsLambdaHandler implements RequestHandler<Object, String> {
 
     private final Logger logger = LoggerFactory.getLogger(AwsLambdaHandler.class);
 
     @Override
-    public String handleRequest(String input, Context context) {
+    public String handleRequest(Object input, Context context) {
         logger.info("Lambda started");
         try {
             Main.main(new String[]{});
