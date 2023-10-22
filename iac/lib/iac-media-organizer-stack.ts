@@ -42,7 +42,7 @@ export class IacMediaOrganizerStack extends cdk.Stack {
             new iam.PolicyStatement({
                 actions: ["ssm:GetParametersByPath"],
                 resources: [
-                    `arn:aws:ssm:${this.region}:${this.account}:parameter/APPLICATION/MEDIA-ORGANIZER`,
+                    `arn:aws:ssm:${this.region}:${this.account}:parameter/APPLICATION/*`,
                 ],
             })
         );

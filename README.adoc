@@ -39,6 +39,20 @@ load them (consider to put the Dropbox access token in AWS SSM Parameter store a
 == Build distribution
 `mvn install`
 
+=== TEMP: Prep for production distribution on AWS Lambda
+
+    mvn clean package
+    jar uf target/media-organizer-0.0.1-SNAPSHOT.jar -C etc application-production.properties
+    jar uf target/media-organizer-0.0.1-SNAPSHOT.jar -C etc bootstrap-production.properties
+
+Can be run locally like this:
+
+    SPRING_PROFILES_ACTIVE=production java -cp target/media-organizer-0.0.1-SNAPSHOT.jar com.moelholm.tools.mediaorganizer.Main
+
+Docs:
+
+    https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Spring-Boot3
+
 == Run production distribution
 All examples are meant to be run from a POSIX terminal positioned at the link:app[] directory.
 
