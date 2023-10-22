@@ -34,7 +34,9 @@ export class IacMediaOrganizerStack extends cdk.Stack {
             handler: handler,
             timeout: cdk.Duration.minutes(15),
             code: lambda.Code.fromAsset(lambdaZipFile),
-            environment: {},
+            environment: {
+                "SPRING_PROFILES_ACTIVE": "production",
+            },
         });
         lambdaFunction.addToRolePolicy(
             new iam.PolicyStatement({
