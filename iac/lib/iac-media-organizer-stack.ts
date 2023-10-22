@@ -16,10 +16,10 @@ export class IacMediaOrganizerStack extends cdk.Stack {
         const lambdaFunction = this.createFunction(
             "mediaorganizerfunction",
             "build/announce-new-accounts-service.announceNewAccounts",
-            "../app-javabubble/lambda-function.zip"
+            "../app/target/media-organizer-awslambda.zip"
         );
         const newAccountsRule = new events.Rule(this, "mediaorganizerfunctionrule", {
-            schedule: events.Schedule.cron({minute: "30", hour: "*/2"}),
+            schedule: events.Schedule.cron({minute: "30", hour: "3"}),
             targets: [new targets.LambdaFunction(lambdaFunction)],
         });
     }
