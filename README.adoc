@@ -58,8 +58,8 @@ mentioned above.
 
 Maven:
 
+    SPRING_PROFILES_ACTIVE=production java -jar target/media-organizer-0.0.1-SNAPSHOT.jar
+
+JRE (it's a shaded JAR, not a spring boot plugin built one):
+
     SPRING_PROFILES_ACTIVE=production java -cp target/media-organizer-0.0.1-SNAPSHOT.jar com.moelholm.tools.mediaorganizer.Main
-
-JRE (it's a shaded JAR, not a spring boot plugin built one - hence the need to specify the main class):
-
-    java -jar target/media-organizer-0.0.1-SNAPSHOT.jar --spring.config.location="classpath:/,etc/application-production.properties
