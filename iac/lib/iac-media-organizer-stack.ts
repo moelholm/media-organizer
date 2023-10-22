@@ -15,8 +15,8 @@ export class IacMediaOrganizerStack extends cdk.Stack {
         //
         const lambdaFunction = this.createFunction(
             "mediaorganizerfunction",
-            "build/announce-new-accounts-service.announceNewAccounts",
-            "../app/target/media-organizer-awslambda.zip"
+            "com.moelholm.tools.aws.AwsLambdaHandler::handleRequest",
+            "../app/target/media-organizer-0.0.1-SNAPSHOT.jar"
         );
         const newAccountsRule = new events.Rule(this, "mediaorganizerfunctionrule", {
             schedule: events.Schedule.cron({minute: "30", hour: "3"}),
@@ -30,7 +30,7 @@ export class IacMediaOrganizerStack extends cdk.Stack {
         lambdaZipFile: string,
     ) {
         const lambdaFunction = new lambda.Function(this, id, {
-            runtime: lambda.Runtime.JAVA_11,
+            runtime: lambda.Runtime.JAVA_17,
             handler: handler,
             timeout: cdk.Duration.minutes(15),
             code: lambda.Code.fromAsset(lambdaZipFile),
