@@ -1,4 +1,4 @@
-# iac-media-organizer
+# iac
 
 IaC code for the "Media Organizer" application.
 
