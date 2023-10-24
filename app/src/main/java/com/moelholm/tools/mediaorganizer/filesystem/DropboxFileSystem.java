@@ -18,7 +18,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
@@ -61,14 +60,14 @@ public class DropboxFileSystem implements FileSystem {
                             "/files/list_folder",
                             new DropboxFileRequest(dropboxPath),
                             DropboxListFolderResponse.class);
-            var allFiles = new ArrayList<DropboxFile>(listFolderResponse.getDropboxFiles());
-            while (listFolderResponse.hasMore()) {
+            var allFiles = new ArrayList<>(listFolderResponse.dropboxFiles());
+            while (listFolderResponse.more()) {
                 listFolderResponse =
                         postToDropboxAndGetResponse(
                                 "/files/list_folder/continue",
-                                new DropboxCursorRequest(listFolderResponse.getCursor()),
+                                new DropboxCursorRequest(listFolderResponse.cursor()),
                                 DropboxListFolderResponse.class);
-                allFiles.addAll(listFolderResponse.getDropboxFiles());
+                allFiles.addAll(listFolderResponse.dropboxFiles());
             }
             return allFiles.stream().map(DropboxFile::pathLower).map(Paths::get);
         } catch (HttpClientErrorException e) {
@@ -132,65 +131,34 @@ public class DropboxFileSystem implements FileSystem {
         return pathAsString.startsWith("/") ? pathAsString : String.format("/%s", pathAsString);
     }
 
-    public record DropboxFileRequest(String path) {}
-    public record DropboxCursorRequest(String cursor) {}
+    public record DropboxFileRequest(String path) {
+    }
 
-    public static class DropboxMoveRequest {
+    public record DropboxCursorRequest(String cursor) {
+    }
 
-        @JsonProperty("from_path")
-        private String fromPath;
-
-        @JsonProperty("to_path")
-        private String toPath;
-
-        public DropboxMoveRequest(String fromPath, String toPath) {
-            this.fromPath = fromPath;
-            this.toPath = toPath;
-        }
-
-        public String getFromPath() {
-            return fromPath;
-        }
-
-        public String getToPath() {
-            return toPath;
-        }
+    public record DropboxMoveRequest(
+            @JsonProperty("from_path")
+            String fromPath,
+            @JsonProperty("to_path")
+            String toPath
+    ) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class DropboxListFolderResponse {
-
-        @JsonProperty("entries")
-        private List<DropboxFile> dropboxFiles;
-
-        @JsonProperty("has_more")
-        private boolean more;
-
-        @JsonProperty("cursor")
-        private String cursor;
-
-        @Override
-        public String toString() {
-            return dropboxFiles.stream()
-                    .map(DropboxFile::toString)
-                    .collect(Collectors.joining("\n"));
-        }
-
-        public List<DropboxFile> getDropboxFiles() {
-            return dropboxFiles;
-        }
-
-        public boolean hasMore() {
-            return more;
-        }
-
-        public String getCursor() {
-            return cursor;
-        }
+    public record DropboxListFolderResponse(
+            @JsonProperty("entries")
+            List<DropboxFile> dropboxFiles,
+            @JsonProperty("has_more")
+            boolean more,
+            @JsonProperty("cursor")
+            String cursor) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record DropboxFile (@JsonProperty(".tag") String tag, @JsonProperty("path_lower") String pathLower) {
+    public record DropboxFile(
+            @JsonProperty(".tag") String tag,
+            @JsonProperty("path_lower") String pathLower) {
         public boolean isDirectory() {
             return "folder".equalsIgnoreCase(tag);
         }
