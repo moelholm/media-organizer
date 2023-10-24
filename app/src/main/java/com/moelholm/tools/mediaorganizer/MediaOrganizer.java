@@ -11,10 +11,7 @@ import java.nio.file.Path;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -36,8 +33,8 @@ public class MediaOrganizer {
     }
 
     public void undoFlatMess() {
-        var from = appProperties.getFromDir();
-        var to = appProperties.getToDir();
+        var from = Path.of(appProperties.source().fromDir());
+        var to = Path.of(appProperties.destination().toDir());
 
         logger.info("Moving files from [{}] to [{}]", from, to);
         assertValidDirs(from, to);
@@ -99,7 +96,7 @@ public class MediaOrganizer {
 
     private Predicate<? super Path> mediaFiles() {
         return path ->
-                appProperties.getMediaFileExtensionsToMatch().stream()
+                Arrays.asList(appProperties.mediafiles().extensionsToMatch()).stream()
                         .anyMatch(extensionMatches(path));
     }
 
@@ -135,7 +132,7 @@ public class MediaOrganizer {
 
         var year = dateCal.get(Calendar.YEAR);
         var month =
-                new DateFormatSymbols(appProperties.getLocale())
+                new DateFormatSymbols(appProperties.destination().localeForGeneratingDestinationFolderNames())
                         .getMonths()[dateCal.get(Calendar.MONTH)];
         month = Character.toUpperCase(month.charAt(0)) + month.substring(1);
         var day = dateCal.get(Calendar.DAY_OF_MONTH);
@@ -147,21 +144,21 @@ public class MediaOrganizer {
             String folderName, List<Path> mediaFilePaths) {
         var lastPartOfFolderName = "( - \\d+)$";
         String replaceWithNewLastPartOfFolderName;
-        if (mediaFilePaths.size() >= appProperties.getAmountOfMediaFilesIndicatingAnEvent()) {
+        if (mediaFilePaths.size() >= appProperties.destination().amountOfMediaFilesIndicatingAnEvent()) {
             replaceWithNewLastPartOfFolderName =
                     String.format(
                             "$1 - %s",
-                            appProperties.getSuffixForDestinationFolderOfUnknownEventMediaFiles());
+                            appProperties.destination().suffixForDestinationFolderOfUnknownEventMediaFiles());
         } else {
             replaceWithNewLastPartOfFolderName =
                     String.format(
-                            " - %s", appProperties.getSuffixForDestinationFolderOfMiscMediaFiles());
+                            " - %s", appProperties.destination().suffixForDestinationFolderOfMiscMediaFiles());
         }
         return folderName.replaceAll(lastPartOfFolderName, replaceWithNewLastPartOfFolderName);
     }
 
     private Date parseDateFromPathName(Path path) {
-        var sdf = new SimpleDateFormat(appProperties.getMediafilesDatePattern());
+        var sdf = new SimpleDateFormat(appProperties.mediafiles().datePattern());
         try {
             return sdf.parse(path.getFileName().toString());
         } catch (ParseException e) {
