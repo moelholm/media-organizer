@@ -17,6 +17,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -110,7 +111,7 @@ public class DropboxFileSystem implements FileSystem {
             request.getHeaders()
                     .put(
                             "Authorization",
-                            singletonList(String.format("Bearer %s", dropboxAccessToken.getAccessToken())));
+                            singletonList(String.format("Bearer %s", dropboxAccessToken.accessToken())));
             request.getHeaders().put("Content-Type", singletonList("application/json"));
             return execution.execute(request, bytes);
         };
@@ -234,5 +235,9 @@ public class DropboxFileSystem implements FileSystem {
         public String getPathLower() {
             return pathLower;
         }
+    }
+
+    @ConfigurationProperties(prefix = "dropbox")
+    public record DropboxFileSystemProperties(String accessToken) {
     }
 }
