@@ -1,21 +1,8 @@
 package com.moelholm.tools.mediaorganizer.filesystem;
 
-import static java.util.Collections.singletonList;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -24,6 +11,17 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Collections.singletonList;
 
 @Component
 @ConditionalOnProperty(name = "mediaorganizer.fileSystemType", havingValue = "dropbox")
@@ -72,7 +70,7 @@ public class DropboxFileSystem implements FileSystem {
                                 DropboxListFolderResponse.class);
                 allFiles.addAll(listFolderResponse.getDropboxFiles());
             }
-            return allFiles.stream().map(DropboxFile::getPathLower).map(Paths::get);
+            return allFiles.stream().map(DropboxFile::pathLower).map(Paths::get);
         } catch (HttpClientErrorException e) {
             throw asRuntimeException(e);
         } catch (Exception e) {
@@ -134,31 +132,8 @@ public class DropboxFileSystem implements FileSystem {
         return pathAsString.startsWith("/") ? pathAsString : String.format("/%s", pathAsString);
     }
 
-    public static class DropboxFileRequest {
-
-        private String path;
-
-        public DropboxFileRequest(String path) {
-            this.path = path;
-        }
-
-        public String getPath() {
-            return path;
-        }
-    }
-
-    public static class DropboxCursorRequest {
-
-        private String cursor;
-
-        public DropboxCursorRequest(String cursor) {
-            this.cursor = cursor;
-        }
-
-        public String getCursor() {
-            return cursor;
-        }
-    }
+    public record DropboxFileRequest(String path) {}
+    public record DropboxCursorRequest(String cursor) {}
 
     public static class DropboxMoveRequest {
 
@@ -215,25 +190,9 @@ public class DropboxFileSystem implements FileSystem {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class DropboxFile {
-
-        @JsonProperty(".tag")
-        private String tag;
-
-        @JsonProperty("path_lower")
-        private String pathLower;
-
-        @Override
-        public String toString() {
-            return ReflectionToStringBuilder.toString(this);
-        }
-
+    public record DropboxFile (@JsonProperty(".tag") String tag, @JsonProperty("path_lower") String pathLower) {
         public boolean isDirectory() {
             return "folder".equalsIgnoreCase(tag);
-        }
-
-        public String getPathLower() {
-            return pathLower;
         }
     }
 
