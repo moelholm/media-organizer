@@ -27,8 +27,14 @@ Then run the application with the following command
 Do you want to try out the tool with Dropbox? Then set properties: `mediaorganizer.fileSystemType=dropbox` and `dropbox.accessToken=[your-own-token]`. To use this feature you need to get your own token for your Dropbox account.
 
 Do you want to try out the tool with support for loading properties from AWS SSM Parameter store? Then set property:
-`aws.paramstore.enabled=true` (enables the code to load properties from AWS SSM Parameter store) and the following
-AWS SDK specific environment variables `AWS_ACCESS_KEY_ID=secret`, `AWS_SECRET_KEY=secret` `AWS_SESSION_TOKEN=secret`.
+`aws.paramstore.enabled=true` (enables the code to load properties from AWS SSM Parameter store) and the usual
+AWS SDK specific environment variables:
+
+  - `AWS_REGION=blah`, `AWS_ACCESS_KEY_ID=secret` and `AWS_SECRET_KEY=secret` (and possibly `AWS_SESSION_TOKEN=secret` if you are using temporary credentials - and you should)
+  - Or, if you have proper profiles defined, then: `AWS_PROFILE=blah`
+  - The code also respects `AWS_CREDENTIAL_PROFILES_FILE` which can be used to point to a custom location of your AWS credentials file
+  - etc. etc.
+
 Now you can set properties in AWS SSM Parameter store under `/APPLICATION/MEDIA-ORGANIZER/*` and the application will
 load them (consider to put the Dropbox access token in AWS SSM Parameter store as an encrypted value for example).
 
@@ -39,13 +45,11 @@ load them (consider to put the Dropbox access token in AWS SSM Parameter store a
 == Build distribution
 `mvn install`
 
-=== TEMP: Prep for production distribution on AWS Lambda
+=== Prep for production distribution on AWS Lambda
 
-    mvn clean package
-    jar uf target/media-organizer-0.0.1-SNAPSHOT.jar -C etc application-production.properties
-    jar uf target/media-organizer-0.0.1-SNAPSHOT.jar -C etc bootstrap-production.properties
+    mvn clean package -Pproduction
 
-Docs:
+Ref:
 
     https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Spring-Boot3
 
@@ -58,7 +62,7 @@ mentioned above.
 
 Maven:
 
-    SPRING_PROFILES_ACTIVE=production java -jar target/media-organizer-0.0.1-SNAPSHOT.jar
+     SPRING_PROFILES_ACTIVE=production mvn spring-boot:run
 
 JRE (it's a shaded JAR, not a spring boot plugin built one):
 
