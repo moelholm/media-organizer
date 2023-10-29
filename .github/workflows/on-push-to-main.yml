@@ -21,11 +21,11 @@ jobs:
         run: echo "Hello, World!"
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
-          role-session-name: GitHubActionsMediaOrganizerDeployment
           aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActionsMediaOrganizerDeployment
           mask-aws-account-id: true
 
       - name: AWS S3 count buckets
